@@ -6,13 +6,15 @@
 
 # Omniverse
 **/*.dmp
-**/.thumbs
+# when I imported it made a .thumbs
+#**/.thumbs
 
 # No USD files allowed in the repo
-**/*.usd
-**/*.usda
-**/*.usdc
-**/*.usdz
+# Ignoring so I can upload my nao usd
+# **/*.usd
+# **/*.usda
+# **/*.usdc
+# **/*.usdz
 
 # Python
 .DS_Store
