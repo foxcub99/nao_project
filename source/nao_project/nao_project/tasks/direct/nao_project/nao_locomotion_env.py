@@ -36,8 +36,16 @@ class NaoLocomotionEnv(DirectRLEnv):
         self.motor_effort_ratio = torch.ones_like(
             self.joint_gears, device=self.sim.device
         )
-        # Get the joint indices from the actuator configuration
-        self._joint_dof_idx = self.robot.actuators["body"].joint_indices
+        # Get the joint indices from all actuator groups
+        head_indices = self.robot.actuators["head"].joint_indices
+        arms_indices = self.robot.actuators["arms"].joint_indices
+        legs_indices = self.robot.actuators["legs"].joint_indices
+        self._joint_dof_idx = torch.cat([head_indices, arms_indices, legs_indices])
+
+        # Store individual group indices for potential future use
+        self._head_dof_idx = head_indices
+        self._arms_dof_idx = arms_indices
+        self._legs_dof_idx = legs_indices
 
         self.potentials = torch.zeros(
             self.num_envs, dtype=torch.float32, device=self.sim.device
@@ -135,6 +143,40 @@ class NaoLocomotionEnv(DirectRLEnv):
             self.cfg.sim.dt,
         )
 
+    # Helper methods to access joint data by body part groups
+    def get_head_joint_data(self):
+        """Get head joint positions and velocities."""
+        head_pos = self.robot.data.joint_pos[:, self._head_dof_idx]
+        head_vel = self.robot.data.joint_vel[:, self._head_dof_idx]
+        return head_pos, head_vel
+
+    def get_arms_joint_data(self):
+        """Get arms joint positions and velocities."""
+        arms_pos = self.robot.data.joint_pos[:, self._arms_dof_idx]
+        arms_vel = self.robot.data.joint_vel[:, self._arms_dof_idx]
+        return arms_pos, arms_vel
+
+    def get_legs_joint_data(self):
+        """Get legs joint positions and velocities."""
+        legs_pos = self.robot.data.joint_pos[:, self._legs_dof_idx]
+        legs_vel = self.robot.data.joint_vel[:, self._legs_dof_idx]
+        return legs_pos, legs_vel
+
+    def get_head_actions(self):
+        """Get actions for head joints."""
+        # Head joints are first 2 in the combined action array
+        return self.actions[:, :2]
+
+    def get_arms_actions(self):
+        """Get actions for arm joints."""
+        # Arm joints are next 8 in the combined action array (indices 2-9)
+        return self.actions[:, 2:10]
+
+    def get_legs_actions(self):
+        """Get actions for leg joints."""
+        # Leg joints are last 11 in the combined action array (indices 10-20)
+        return self.actions[:, 10:]
+
     def _get_observations(self) -> dict:
         obs = torch.cat(
             (
@@ -156,6 +198,19 @@ class NaoLocomotionEnv(DirectRLEnv):
         return observations
 
     def _get_rewards(self) -> torch.Tensor:
+        # Example of how to use the new joint groups for custom rewards:
+        # head_pos, head_vel = self.get_head_joint_data()
+        # arms_pos, arms_vel = self.get_arms_joint_data()
+        # legs_pos, legs_vel = self.get_legs_joint_data()
+        # head_actions = self.get_head_actions()
+        # arms_actions = self.get_arms_actions()
+        # legs_actions = self.get_legs_actions()
+        #
+        # You can now compute separate penalties/rewards for each body part:
+        # head_penalty = torch.sum(head_actions**2, dim=-1) * head_cost_scale
+        # arms_penalty = torch.sum(arms_actions**2, dim=-1) * arms_cost_scale
+        # legs_penalty = torch.sum(legs_actions**2, dim=-1) * legs_cost_scale
+
         total_reward = compute_rewards(
             self.actions,
             self.reset_terminated,

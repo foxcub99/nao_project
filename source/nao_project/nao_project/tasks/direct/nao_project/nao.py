@@ -64,11 +64,16 @@ NAO_CFG = ArticulationCfg(
         },
     ),
     actuators={
-        "body": ImplicitActuatorCfg(
+        "head": ImplicitActuatorCfg(
             joint_names_expr=[
-                # Be more specific - use exact joint names instead of regex
                 "HeadYaw",
                 "HeadPitch",
+            ],
+            stiffness=None,
+            damping=None,
+        ),
+        "arms": ImplicitActuatorCfg(
+            joint_names_expr=[
                 "LShoulderPitch",
                 "RShoulderPitch",
                 "LShoulderRoll",
@@ -77,6 +82,12 @@ NAO_CFG = ArticulationCfg(
                 "RElbowYaw",
                 "LElbowRoll",
                 "RElbowRoll",
+            ],
+            stiffness=None,
+            damping=None,
+        ),
+        "legs": ImplicitActuatorCfg(
+            joint_names_expr=[
                 "LHipYawPitch",  # NAO shares this joint
                 "LHipRoll",
                 "RHipRoll",
@@ -88,7 +99,7 @@ NAO_CFG = ArticulationCfg(
                 "RAnklePitch",
                 "LAnkleRoll",
                 "RAnkleRoll",
-            ],  # Target all joints
+            ],
             stiffness=None,
             damping=None,
         ),
