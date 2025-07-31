@@ -12,7 +12,16 @@ help:
 	@echo   Example: make p ARGS="python scripts/skrl/train.py"
 
 # Run command with IsaacLab prefix
-p:
+isaac:
 	$(ISAAC_LAB_CMD) $(ARGS)
 
-.PHONY: help p
+.PHONY: help isaac debug train play
+
+debug:
+	$(ISAAC_LAB_CMD) scripts/skrl/train.py --task Nao --num_envs 6
+
+train:
+	$(ISAAC_LAB_CMD) scripts/skrl/train.py --task Nao --headless
+
+play:
+	$(ISAAC_LAB_CMD) scripts/skrl/play.py --task Nao --num_envs 6
