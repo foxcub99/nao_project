@@ -67,16 +67,16 @@ NAO_CFG = ArticulationCfg(
         "body": ImplicitActuatorCfg(
             joint_names_expr=[
                 # Be more specific - use exact joint names instead of regex
-                # "HeadYaw",
-                # "HeadPitch",
-                # "LShoulderPitch",
-                # "RShoulderPitch",
-                # "LShoulderRoll",
-                # "RShoulderRoll",
-                # "LElbowYaw",
-                # "RElbowYaw",
-                # "LElbowRoll",
-                # "RElbowRoll",
+                "HeadYaw",
+                "HeadPitch",
+                "LShoulderPitch",
+                "RShoulderPitch",
+                "LShoulderRoll",
+                "RShoulderRoll",
+                "LElbowYaw",
+                "RElbowYaw",
+                "LElbowRoll",
+                "RElbowRoll",
                 "LHipYawPitch",  # NAO shares this joint
                 "LHipRoll",
                 "RHipRoll",
