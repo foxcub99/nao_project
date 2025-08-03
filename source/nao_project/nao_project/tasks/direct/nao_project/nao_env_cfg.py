@@ -66,17 +66,17 @@ class NaoEnvCfg(DirectRLEnvCfg):  # Rename class to reflect NAO robot
         0.01,  # RElbowYaw
         0.01,  # LElbowRoll
         0.01,  # RElbowRoll
-        5.0,  # LHipYawPitch
-        5.0,  # LHipRoll
-        5.0,  # RHipRoll
+        3.0,  # LHipYawPitch
+        2.0,  # LHipRoll
+        2.0,  # RHipRoll
         5.0,  # LHipPitch
         5.0,  # RHipPitch
         5.0,  # LKneePitch
         5.0,  # RKneePitch
         5.0,  # LAnklePitch
         5.0,  # RAnklePitch
-        5.0,  # LAnkleRoll
-        5.0,  # RAnkleRoll
+        2.0,  # LAnkleRoll
+        2.0,  # RAnkleRoll
     ]
 
     # Reward weights optimized for velocity-focused locomotion
