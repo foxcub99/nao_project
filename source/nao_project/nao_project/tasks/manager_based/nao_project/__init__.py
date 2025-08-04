@@ -12,7 +12,7 @@ from . import agents
 ##
 
 gym.register(
-    id="Rough-Nao-v0",
+    id="Rough-Nao",
     entry_point="isaaclab.envs:ManagerBasedRLEnv",
     disable_env_checker=True,
     kwargs={
@@ -24,7 +24,7 @@ gym.register(
 
 
 gym.register(
-    id="Rough-Nao-Play-v0",
+    id="Rough-Nao-Play",
     entry_point="isaaclab.envs:ManagerBasedRLEnv",
     disable_env_checker=True,
     kwargs={
@@ -36,7 +36,7 @@ gym.register(
 
 
 gym.register(
-    id="Nao-Mgr-v0",
+    id="Nao-Mgr",
     entry_point="isaaclab.envs:ManagerBasedRLEnv",
     disable_env_checker=True,
     kwargs={
@@ -48,7 +48,7 @@ gym.register(
 
 
 gym.register(
-    id="Nao-Mgr-Play-v0",
+    id="Nao-Mgr-Play",
     entry_point="isaaclab.envs:ManagerBasedRLEnv",
     disable_env_checker=True,
     kwargs={

@@ -3,7 +3,7 @@
 ISAAC_LAB_PATH = ..\..\IsaacLab
 ISAAC_LAB_CMD = $(ISAAC_LAB_PATH)\isaaclab.bat -p
 
-DEFAULT_TASK = Nao
+DEFAULT_TASK = Nao-Direct
 
 # Default target to show usage
 help:
