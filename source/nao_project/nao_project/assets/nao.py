@@ -22,18 +22,17 @@ NAO_CFG = ArticulationCfg(
         usd_path=f"C:/Users/reill/lab/nao_project/source/nao_project/nao_project/assets/nao/nao-project.usd",  # Path to NAO USD file
         rigid_props=sim_utils.RigidBodyPropertiesCfg(
             disable_gravity=False,
-            max_depenetration_velocity=0.1,  # was 5.0, using to debug
+            max_depenetration_velocity=1.0,
             enable_gyroscopic_forces=True,
         ),
         articulation_props=sim_utils.ArticulationRootPropertiesCfg(
             enabled_self_collisions=False,
             solver_position_iteration_count=8,
-            solver_velocity_iteration_count=1,  # Increased for better stability
-            sleep_threshold=0.005,  # Lowered for more responsive behavior
+            solver_velocity_iteration_count=4,
+            sleep_threshold=0.005,
             stabilization_threshold=0.001,
         ),
-        copy_from_source=True,  # This may help with filtering
-        # Scale the robot if needed and ensure no ground planes are copied
+        copy_from_source=True,
         scale=None,
         visible=True,
     ),
@@ -42,26 +41,24 @@ NAO_CFG = ArticulationCfg(
             0.0,
             0.0,
             0.345,
-        ),  # NAO is about 58cm tall, starting with feet on ground
+        ),
         joint_pos={
-            # Default joint positions for stable standing pose
             "HeadYaw": 0.0,
             "HeadPitch": 0.0,
-            # Arms - positioned to avoid interference with walking
-            ".*ShoulderPitch": 0.0,  # Arms slightly forward
-            "RShoulderRoll": -0.05,  # Right arm slightly away from body
-            "LShoulderRoll": 0.05,  # Left arm slightly away from body
+            ".*ShoulderPitch": 0.0,
+            "RShoulderRoll": -0.05,
+            "LShoulderRoll": 0.05,
             ".*ElbowYaw": 0.0,
-            "RElbowRoll": 0.05,  # Right elbow slightly bent
-            "LElbowRoll": -0.05,  # Left elbow slightly bent
-            # Legs - neutral standing position
-            ".*HipYawPitch": 0.0,
+            "RElbowRoll": 0.05,
+            "LElbowRoll": -0.05,
+            "LHipYawPitch": 0.0,
             ".*HipRoll": 0.0,
             ".*HipPitch": 0.0,
             ".*KneePitch": 0.0,
             ".*AnklePitch": 0.0,
             ".*AnkleRoll": 0.0,
         },
+        joint_vel={".*": 0.0},
     ),
     actuators={
         "head": ImplicitActuatorCfg(
@@ -74,31 +71,28 @@ NAO_CFG = ArticulationCfg(
         ),
         "arms": ImplicitActuatorCfg(
             joint_names_expr=[
-                "LShoulderPitch",
-                "RShoulderPitch",
-                "LShoulderRoll",
-                "RShoulderRoll",
-                "LElbowYaw",
-                "RElbowYaw",
-                "LElbowRoll",
-                "RElbowRoll",
+                ".*ShoulderPitch",
+                ".*ShoulderRoll",
+                ".*ElbowYaw",
+                ".*ElbowRoll",
             ],
             stiffness=None,
             damping=None,
         ),
         "legs": ImplicitActuatorCfg(
             joint_names_expr=[
-                "LHipYawPitch",  # NAO shares this joint
-                "LHipRoll",
-                "RHipRoll",
-                "LHipPitch",
-                "RHipPitch",
-                "LKneePitch",
-                "RKneePitch",
-                "LAnklePitch",
-                "RAnklePitch",
-                "LAnkleRoll",
-                "RAnkleRoll",
+                "LHipYawPitch",
+                ".*HipRoll",
+                ".*HipPitch",
+                ".*KneePitch",
+            ],
+            stiffness=None,
+            damping=None,
+        ),
+        "feet": ImplicitActuatorCfg(
+            joint_names_expr=[
+                ".*AnklePitch",
+                ".*AnkleRoll",
             ],
             stiffness=None,
             damping=None,
@@ -107,9 +101,4 @@ NAO_CFG = ArticulationCfg(
 )
 """Configuration for the NAO robot."""
 
-# You can keep the HUMANOID_CFG if needed or comment it out
-"""
-HUMANOID_CFG = ArticulationCfg(
-    # Original humanoid configuration...
-)
-"""
+

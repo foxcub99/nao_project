@@ -5,7 +5,7 @@
 
 from __future__ import annotations
 
-from .nao import NAO_CFG  # Change import to NAO configuration
+from ....assets.nao import NAO_CFG
 
 import isaaclab.sim as sim_utils
 from isaaclab.assets import ArticulationCfg
@@ -17,7 +17,7 @@ from isaaclab.utils import configclass
 
 
 @configclass
-class NaoEnvCfg(DirectRLEnvCfg):  # Rename class to reflect NAO robot
+class NaoEnvCfg(DirectRLEnvCfg):
 
     # def __post_init__(self):
     #     self.sim.physx.gpu_max_rigid_patch_count = 4096 * 4096
@@ -46,15 +46,13 @@ class NaoEnvCfg(DirectRLEnvCfg):  # Rename class to reflect NAO robot
         debug_vis=False,
     )
 
-    # scene - adjusted for NAO's smaller size
     scene: InteractiveSceneCfg = InteractiveSceneCfg(
         num_envs=4096, env_spacing=2.5, replicate_physics=True
     )
 
-    # robot
     robot: ArticulationCfg = NAO_CFG.replace(prim_path="/World/envs/env_.*/Robot")
 
-    # NAO joint gears - must match exact order in actuator configuration in nao.py
+    # NAO joint gears - must match exact order in actuator configuration in nao.py ?
     joint_gears: list = [
         0.01,  # HeadYaw
         0.01,  # HeadPitch
