@@ -19,7 +19,8 @@ from isaaclab.utils.assets import ISAAC_NUCLEUS_DIR
 NAO_CFG = ArticulationCfg(
     prim_path="{ENV_REGEX_NS}/Robot",
     spawn=sim_utils.UsdFileCfg(
-        usd_path=f"C:/Users/reill/lab/nao_project/source/nao_project/nao_project/assets/nao/nao-project.usd",  # Path to NAO USD file
+        usd_path=f"C:/Users/reill/lab/nao_project/source/nao_project/nao_project/assets/nao/nao-project-contact.usd",  # Path to NAO USD file
+        activate_contact_sensors=True,
         rigid_props=sim_utils.RigidBodyPropertiesCfg(
             disable_gravity=False,
             max_depenetration_velocity=1.0,

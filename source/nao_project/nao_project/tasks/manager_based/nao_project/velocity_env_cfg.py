@@ -23,7 +23,7 @@ from isaaclab.utils import configclass
 from isaaclab.utils.assets import ISAAC_NUCLEUS_DIR, ISAACLAB_NUCLEUS_DIR
 from isaaclab.utils.noise import AdditiveUniformNoiseCfg as Unoise
 
-import isaaclab_tasks.manager_based.locomotion.velocity.mdp as mdp
+from . import mdp
 
 ##
 # Pre-defined configs
@@ -239,7 +239,7 @@ class RewardsCfg:
         func=mdp.feet_air_time,
         weight=0.125,
         params={
-            "sensor_cfg": SceneEntityCfg("contact_forces", body_names=".*FOOT"),
+            "sensor_cfg": SceneEntityCfg("contact_forces", body_names=".*ankle"),
             "command_name": "base_velocity",
             "threshold": 0.5,
         },
@@ -247,7 +247,7 @@ class RewardsCfg:
     undesired_contacts = RewTerm(
         func=mdp.undesired_contacts,
         weight=-1.0,
-        params={"sensor_cfg": SceneEntityCfg("contact_forces", body_names=".*THIGH"), "threshold": 1.0},
+        params={"sensor_cfg": SceneEntityCfg("contact_forces", body_names=".*Thigh"), "threshold": 1.0},
     )
     # -- optional penalties
     flat_orientation_l2 = RewTerm(func=mdp.flat_orientation_l2, weight=0.0)
@@ -263,6 +263,23 @@ class TerminationsCfg:
         func=mdp.illegal_contact,
         params={"sensor_cfg": SceneEntityCfg("contact_forces", body_names="base"), "threshold": 1.0},
     )
+    # Terminate if base_link drops below a certain height (useful for detecting falls)
+    base_height = DoneTerm(
+        func=mdp.root_height_below_minimum,
+        params={
+            "asset_cfg": SceneEntityCfg("robot", body_names="base_link"),
+            "minimum_height": 0.2,  # Terminate if base goes below 30cm
+        },
+    )
+    
+    # # Alternative: Keep the height scanner termination for terrain drops
+    # height_drop = DoneTerm(
+    #     func=mdp.height_drop,
+    #     params={
+    #         "sensor_cfg": SceneEntityCfg("height_scanner"),
+    #         "threshold": 0.2,
+    #     },
+    # )
 
 
 @configclass

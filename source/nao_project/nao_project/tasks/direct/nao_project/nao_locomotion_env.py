@@ -40,12 +40,14 @@ class NaoLocomotionEnv(DirectRLEnv):
         head_indices = self.robot.actuators["head"].joint_indices
         arms_indices = self.robot.actuators["arms"].joint_indices
         legs_indices = self.robot.actuators["legs"].joint_indices
-        self._joint_dof_idx = torch.cat([head_indices, arms_indices, legs_indices])
+        feet_indices = self.robot.actuators["feet"].joint_indices
+        self._joint_dof_idx = torch.cat([head_indices, arms_indices, legs_indices, feet_indices])
 
         # Store individual group indices for potential future use
         self._head_dof_idx = head_indices
         self._arms_dof_idx = arms_indices
         self._legs_dof_idx = legs_indices
+        self._feet_dof_idx = feet_indices
 
         self.potentials = torch.zeros(
             self.num_envs, dtype=torch.float32, device=self.sim.device
@@ -162,6 +164,12 @@ class NaoLocomotionEnv(DirectRLEnv):
         legs_vel = self.robot.data.joint_vel[:, self._legs_dof_idx]
         return legs_pos, legs_vel
 
+    def get_feet_joint_data(self):
+        """Get feet joint positions and velocities."""
+        feet_pos = self.robot.data.joint_pos[:, self._feet_dof_idx]
+        feet_vel = self.robot.data.joint_vel[:, self._feet_dof_idx]
+        return feet_pos, feet_vel
+
     def get_head_actions(self):
         """Get actions for head joints."""
         # Head joints are first 2 in the combined action array
@@ -202,14 +210,17 @@ class NaoLocomotionEnv(DirectRLEnv):
         # head_pos, head_vel = self.get_head_joint_data()
         # arms_pos, arms_vel = self.get_arms_joint_data()
         # legs_pos, legs_vel = self.get_legs_joint_data()
+        # feet_pos, feet_vel = self.get_feet_joint_data()
         # head_actions = self.get_head_actions()
         # arms_actions = self.get_arms_actions()
         # legs_actions = self.get_legs_actions()
+        # feet_actions = self.get_feet_actions()
         #
         # You can now compute separate penalties/rewards for each body part:
         # head_penalty = torch.sum(head_actions**2, dim=-1) * head_cost_scale
         # arms_penalty = torch.sum(arms_actions**2, dim=-1) * arms_cost_scale
         # legs_penalty = torch.sum(legs_actions**2, dim=-1) * legs_cost_scale
+        # feet_penalty = torch.sum(feet_actions**2, dim=-1) * feet_cost_scale
 
         total_reward = compute_rewards(
             self.actions,
