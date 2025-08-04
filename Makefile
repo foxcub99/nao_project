@@ -3,6 +3,8 @@
 ISAAC_LAB_PATH = ..\..\IsaacLab
 ISAAC_LAB_CMD = $(ISAAC_LAB_PATH)\isaaclab.bat -p
 
+DEFAULT_TASK = Nao
+
 # Default target to show usage
 help:
 	@echo Available targets:
@@ -17,15 +19,19 @@ isaac:
 	$(ISAAC_LAB_CMD) $(ARGS)
 
 .PHONY: help isaac debug train play view-logs view-recent-log
-
+	
 debug:
-	$(ISAAC_LAB_CMD) scripts/skrl/train.py --task Nao --num_envs 6
+	$(ISAAC_LAB_CMD) scripts/skrl/train.py --task $(if $(word 2,$(MAKECMDGOALS)),$(word 2,$(MAKECMDGOALS)),$(DEFAULT_TASK)) --num_envs 1
 
 train:
-	$(ISAAC_LAB_CMD) scripts/skrl/train.py --task Nao --headless
+	$(ISAAC_LAB_CMD) scripts/skrl/train.py --task $(if $(word 2,$(MAKECMDGOALS)),$(word 2,$(MAKECMDGOALS)),$(DEFAULT_TASK)) --headless
 
 play:
-	$(ISAAC_LAB_CMD) scripts/skrl/play.py --task Nao --num_envs 6
+	$(ISAAC_LAB_CMD) scripts/skrl/play.py --task $(if $(word 2,$(MAKECMDGOALS)),$(word 2,$(MAKECMDGOALS)),$(DEFAULT_TASK)) --num_envs 6
+
+# Dummy target to prevent make from trying to build files named after tasks
+%:
+	@:
 
 view-logs:
 	@echo [INFO]if you run into error make sure to 'conda deactivate' so that it uses isaacs python

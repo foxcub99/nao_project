@@ -13,11 +13,11 @@ from isaaclab_tasks.manager_based.locomotion.velocity.velocity_env_cfg import Lo
 ##
 # Pre-defined configs
 ##
-from isaaclab_assets import G1_MINIMAL_CFG  # isort: skip
+from isaaclab_assets import Nao_MINIMAL_CFG  # isort: skip
 
 
 @configclass
-class G1Rewards(RewardsCfg):
+class NaoRewards(RewardsCfg):
     """Reward terms for the MDP."""
 
     termination_penalty = RewTerm(func=mdp.is_terminated, weight=-200.0)
@@ -101,14 +101,14 @@ class G1Rewards(RewardsCfg):
 
 
 @configclass
-class G1RoughEnvCfg(LocomotionVelocityRoughEnvCfg):
-    rewards: G1Rewards = G1Rewards()
+class NaoRoughEnvCfg(LocomotionVelocityRoughEnvCfg):
+    rewards: NaoRewards = NaoRewards()
 
     def __post_init__(self):
         # post init of parent
         super().__post_init__()
         # Scene
-        self.scene.robot = G1_MINIMAL_CFG.replace(prim_path="{ENV_REGEX_NS}/Robot")
+        self.scene.robot = Nao_MINIMAL_CFG.replace(prim_path="{ENV_REGEX_NS}/Robot")
         self.scene.height_scanner.prim_path = "{ENV_REGEX_NS}/Robot/torso_link"
 
         # Randomization
@@ -152,7 +152,7 @@ class G1RoughEnvCfg(LocomotionVelocityRoughEnvCfg):
 
 
 @configclass
-class G1RoughEnvCfg_PLAY(G1RoughEnvCfg):
+class NaoRoughEnvCfg_PLAY(NaoRoughEnvCfg):
     def __post_init__(self):
         # post init of parent
         super().__post_init__()

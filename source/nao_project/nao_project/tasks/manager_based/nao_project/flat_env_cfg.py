@@ -6,11 +6,11 @@
 from isaaclab.managers import SceneEntityCfg
 from isaaclab.utils import configclass
 
-from .rough_env_cfg import G1RoughEnvCfg
+from .rough_env_cfg import NaoRoughEnvCfg
 
 
 @configclass
-class G1FlatEnvCfg(G1RoughEnvCfg):
+class NaoFlatEnvCfg(NaoRoughEnvCfg):
     def __post_init__(self):
         # post init of parent
         super().__post_init__()
@@ -41,7 +41,7 @@ class G1FlatEnvCfg(G1RoughEnvCfg):
         self.commands.base_velocity.ranges.ang_vel_z = (-1.0, 1.0)
 
 
-class G1FlatEnvCfg_PLAY(G1FlatEnvCfg):
+class NaoFlatEnvCfg_PLAY(NaoFlatEnvCfg):
     def __post_init__(self) -> None:
         # post init of parent
         super().__post_init__()
