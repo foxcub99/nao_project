@@ -1,0 +1,5 @@
+[extension]
+name = "nao_project"
+
+[dependencies.apt]
+packages = []
