@@ -11,6 +11,8 @@ import isaaclab.sim as sim_utils
 from isaaclab.actuators import ImplicitActuatorCfg
 from isaaclab.assets import ArticulationCfg
 from isaaclab.utils.assets import ISAAC_NUCLEUS_DIR
+from pathlib import Path
+
 
 ##
 # Configuration
@@ -19,7 +21,7 @@ from isaaclab.utils.assets import ISAAC_NUCLEUS_DIR
 NAO_CFG = ArticulationCfg(
     prim_path="{ENV_REGEX_NS}/Robot",
     spawn=sim_utils.UsdFileCfg(
-        usd_path=f"C:/Users/reill/lab/nao_project/source/nao_project/nao_project/assets/nao/nao-project-contact.usd",  # Path to NAO USD file
+        usd_path=str(Path(__file__).parent / "nao" / "nao-project.usd"),
         activate_contact_sensors=True,
         rigid_props=sim_utils.RigidBodyPropertiesCfg(
             disable_gravity=False,
