@@ -38,7 +38,7 @@ docker/.container.cfg
 
 # Outputs
 **/output/*
-**/outputs/*
+**/outputs*/*
 **/videos/*
 **/wandb/*
 **/.neptune/*
@@ -57,8 +57,10 @@ _build
 
 # RL-Games
 **/runs/*
-**/logs/*
+**/logs*/*
 **/recordings/*
 
 # Pre-Trained Checkpoints
 /.pretrained_checkpoints/
+
+/Makefile
