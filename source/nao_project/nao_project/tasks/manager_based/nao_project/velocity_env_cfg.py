@@ -9,19 +9,19 @@ from dataclasses import MISSING
 import isaaclab.sim as sim_utils
 from isaaclab.assets import ArticulationCfg, AssetBaseCfg
 from isaaclab.envs import ManagerBasedRLEnvCfg
-from isaaclab.managers import CurriculumTermCfg as CurrTerm
-from isaaclab.managers import EventTermCfg as EventTerm
-from isaaclab.managers import ObservationGroupCfg as ObsGroup
-from isaaclab.managers import ObservationTermCfg as ObsTerm
-from isaaclab.managers import RewardTermCfg as RewTerm
+from isaaclab.managers import CurriculumTermCfg
+from isaaclab.managers import EventTermCfg
+from isaaclab.managers import ObservationGroupCfg
+from isaaclab.managers import ObservationTermCfg
+from isaaclab.managers import RewardTermCfg
 from isaaclab.managers import SceneEntityCfg
-from isaaclab.managers import TerminationTermCfg as DoneTerm
+from isaaclab.managers import TerminationTermCfg
 from isaaclab.scene import InteractiveSceneCfg
 from isaaclab.sensors import ContactSensorCfg
 from isaaclab.terrains import TerrainImporterCfg
 from isaaclab.utils import configclass
 from isaaclab.utils.assets import ISAAC_NUCLEUS_DIR, ISAACLAB_NUCLEUS_DIR
-from isaaclab.utils.noise import AdditiveUniformNoiseCfg as Unoise
+from isaaclab.utils.noise import AdditiveUniformNoiseCfg
 
 from . import mdp
 
@@ -102,20 +102,20 @@ class ObservationsCfg:
     """Observation specifications for the MDP."""
 
     @configclass
-    class PolicyCfg(ObsGroup):
+    class PolicyCfg(ObservationGroupCfg):
         """Observations for policy group."""
 
-        base_lin_vel = ObsTerm(func=mdp.base_lin_vel, noise=Unoise(n_min=-0.1, n_max=0.1))
-        base_ang_vel = ObsTerm(func=mdp.base_ang_vel, noise=Unoise(n_min=-0.2, n_max=0.2))
-        projected_gravity = ObsTerm(
+        base_lin_vel = ObservationTermCfg(func=mdp.base_lin_vel, noise=AdditiveUniformNoiseCfg(n_min=-0.1, n_max=0.1))
+        base_ang_vel = ObservationTermCfg(func=mdp.base_ang_vel, noise=AdditiveUniformNoiseCfg(n_min=-0.2, n_max=0.2))
+        projected_gravity = ObservationTermCfg(
             func=mdp.projected_gravity,
-            noise=Unoise(n_min=-0.05, n_max=0.05),
+            noise=AdditiveUniformNoiseCfg(n_min=-0.05, n_max=0.05),
         )
-        velocity_commands = ObsTerm(func=mdp.generated_commands, params={"command_name": "base_velocity"})
-        joint_pos = ObsTerm(func=mdp.joint_pos_rel, noise=Unoise(n_min=-0.01, n_max=0.01))
-        joint_vel = ObsTerm(func=mdp.joint_vel_rel, noise=Unoise(n_min=-1.5, n_max=1.5))
-        actions = ObsTerm(func=mdp.last_action)
-        foot_contact = ObsTerm(
+        velocity_commands = ObservationTermCfg(func=mdp.generated_commands, params={"command_name": "base_velocity"})
+        joint_pos = ObservationTermCfg(func=mdp.joint_pos_rel, noise=AdditiveUniformNoiseCfg(n_min=-0.01, n_max=0.01))
+        joint_vel = ObservationTermCfg(func=mdp.joint_vel_rel, noise=AdditiveUniformNoiseCfg(n_min=-1.5, n_max=1.5))
+        actions = ObservationTermCfg(func=mdp.last_action)
+        foot_contact = ObservationTermCfg(
             func=mdp.foot_contact,
             params={
                 "sensor_cfg": SceneEntityCfg("contact_forces", body_names=[".*_ankle"]),
@@ -134,7 +134,7 @@ class EventCfg:
     """Configuration for events."""
 
     # Startup
-    physics_material = EventTerm(
+    physics_material = EventTermCfg(
         func=mdp.randomize_rigid_body_material,
         mode="startup",
         params={
@@ -145,7 +145,7 @@ class EventCfg:
             "num_buckets": 64,
         },
     )
-    add_base_mass = EventTerm(
+    add_base_mass = EventTermCfg(
         func=mdp.randomize_rigid_body_mass,
         mode="startup",
         params={
@@ -155,7 +155,7 @@ class EventCfg:
         },
     )
     # Reset
-    base_external_force_torque = EventTerm(
+    base_external_force_torque = EventTermCfg(
         func=mdp.apply_external_force_torque,
         mode="reset",
         params={
@@ -164,7 +164,7 @@ class EventCfg:
             "torque_range": (-0.0, 0.0),
         },
     )
-    reset_base = EventTerm(
+    reset_base = EventTermCfg(
         func=mdp.reset_root_state_uniform,
         mode="reset",
         params={
@@ -179,7 +179,7 @@ class EventCfg:
             },
         },
     )
-    reset_robot_joints = EventTerm(
+    reset_robot_joints = EventTermCfg(
         func=mdp.reset_joints_by_scale,
         mode="reset",
         params={
@@ -188,7 +188,7 @@ class EventCfg:
         },
     )
     # Interval
-    push_robot = EventTerm(
+    push_robot = EventTermCfg(
         func=mdp.push_by_setting_velocity,
         mode="interval",
         interval_range_s=(10.0, 15.0),
@@ -201,15 +201,15 @@ class RewardsCfg:
     """Reward terms for the MDP."""
 
     # Rewards
-    track_lin_vel_xy_exp = RewTerm(
+    track_lin_vel_xy_exp = RewardTermCfg(
         func=mdp.track_lin_vel_xy_yaw_frame_exp,
         weight=1.0,
         params={"command_name": "base_velocity", "std": 0.5},
     )
-    track_ang_vel_z_exp = RewTerm(
+    track_ang_vel_z_exp = RewardTermCfg(
         func=mdp.track_ang_vel_z_world_exp, weight=2.0, params={"command_name": "base_velocity", "std": 0.5}
     )
-    feet_air_time = RewTerm(
+    feet_air_time = RewardTermCfg(
         func=mdp.feet_air_time_positive_biped,
         weight=0.25,
         params={
@@ -219,13 +219,13 @@ class RewardsCfg:
         },
     )
     # Penalties
-    termination_penalty = RewTerm(func=mdp.is_terminated, weight=-200.0)
-    action_rate_l2 = RewTerm(func=mdp.action_rate_l2, weight=-0.01)
-    lin_vel_z_l2 = RewTerm(func=mdp.lin_vel_z_l2, weight=-2.0)
-    ang_vel_xy_l2 = RewTerm(func=mdp.ang_vel_xy_l2, weight=-0.05)
-    dof_torques_l2 = RewTerm(func=mdp.joint_torques_l2, weight=-1.0e-5)
-    dof_acc_l2 = RewTerm(func=mdp.joint_acc_l2, weight=-2.5e-7)
-    feet_slide = RewTerm(
+    termination_penalty = RewardTermCfg(func=mdp.is_terminated, weight=-200.0)
+    action_rate_l2 = RewardTermCfg(func=mdp.action_rate_l2, weight=-0.01)
+    lin_vel_z_l2 = RewardTermCfg(func=mdp.lin_vel_z_l2, weight=-2.0)
+    ang_vel_xy_l2 = RewardTermCfg(func=mdp.ang_vel_xy_l2, weight=-0.05)
+    dof_torques_l2 = RewardTermCfg(func=mdp.joint_torques_l2, weight=-1.0e-5)
+    dof_acc_l2 = RewardTermCfg(func=mdp.joint_acc_l2, weight=-2.5e-7)
+    feet_slide = RewardTermCfg(
         func=mdp.feet_slide,
         weight=-0.1,
         params={
@@ -233,15 +233,15 @@ class RewardsCfg:
             "asset_cfg": SceneEntityCfg("robot", body_names=[".*_ankle"]),
         },
     )
-    flat_orientation_l2 = RewTerm(func=mdp.flat_orientation_l2, weight=0.0)
+    flat_orientation_l2 = RewardTermCfg(func=mdp.flat_orientation_l2, weight=0.0)
     # -- Joint limits
-    dof_pos_limits = RewTerm(
+    dof_pos_limits = RewardTermCfg(
         func=mdp.joint_pos_limits,
         weight=-1.0,
         params={"asset_cfg": SceneEntityCfg("robot", joint_names=[".*AnklePitch", ".*AnkleRoll"])},
     )
     # -- Joint deviation 
-    joint_deviation_hip_roll = RewTerm(
+    joint_deviation_hip_roll = RewardTermCfg(
         func=mdp.joint_deviation_l1_with_command_scaling,
         weight=-0.1,
         params={
@@ -250,7 +250,7 @@ class RewardsCfg:
             "command_index": 1,  # Y-axis linear velocity for sidestepping
         },
     )
-    joint_deviation_torso = RewTerm(
+    joint_deviation_torso = RewardTermCfg(
         func=mdp.joint_deviation_l1_with_command_scaling,
         weight=-0.1,
         params={
@@ -259,7 +259,7 @@ class RewardsCfg:
             "command_index": 2,  # Z-axis angular velocity for torso rotation
         },
     )
-    joint_deviation_arms = RewTerm(
+    joint_deviation_arms = RewardTermCfg(
         func=mdp.joint_deviation_l1,
         weight=-0.1,
         params={
@@ -276,7 +276,7 @@ class RewardsCfg:
             )
         },
     )
-    joint_deviation_fingers = RewTerm(
+    joint_deviation_fingers = RewardTermCfg(
         func=mdp.joint_deviation_l1,
         weight=-0.05,
         params={
@@ -294,8 +294,8 @@ class RewardsCfg:
 class TerminationsCfg:
     """Termination terms for the MDP."""
 
-    time_out = DoneTerm(func=mdp.time_out, time_out=True)
-    base_height = DoneTerm(
+    time_out = TerminationTermCfg(func=mdp.time_out, time_out=True)
+    base_height = TerminationTermCfg(
         func=mdp.root_height_below_minimum,
         params={
             "asset_cfg": SceneEntityCfg("robot", body_names="base_link"),
@@ -311,7 +311,7 @@ class CurriculumCfg:
 
     
     # # NEW: Reward weight curriculum - gradually shift focus from stability to performance
-    # reward_weights = CurrTerm(
+    # reward_weights = CurriculumTermCfg(
     #     func=mdp.modify_reward_weights,
     #     params={
     #         "initial_weights": {
@@ -332,7 +332,7 @@ class CurriculumCfg:
     # )
     
     # # NEW: Command difficulty curriculum - start with easier commands
-    # command_difficulty = CurrTerm(
+    # command_difficulty = CurriculumTermCfg(
     #     func=mdp.modify_command_ranges,
     #     params={
     #         "initial_ranges": {
