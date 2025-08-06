@@ -23,6 +23,26 @@ class NaoEnvCfg(LocomotionVelocityEnvCfg):
         self.scene.robot = NAO_CFG.replace(prim_path="{ENV_REGEX_NS}/Robot")
         self.scene.contact_forces.prim_path=f"/World/envs/env_.*/Robot/NaoH25V50/.*"
 
+        # Commands
+        self.commands.base_velocity.ranges.lin_vel_x = (-0.2, 0.3)
+        self.commands.base_velocity.ranges.lin_vel_y = (-0.25, 0.25)
+        self.commands.base_velocity.ranges.ang_vel_z = (-1.5, 1.5)
+
+        # Actions
+        self.actions.joint_pos.joint_names = [
+            "HeadYaw", "HeadPitch",
+            ".*ShoulderPitch", ".*ShoulderRoll",
+            ".*ElbowYaw", ".*ElbowRoll",
+            "LHipYawPitch",
+            ".*HipRoll", ".*HipPitch",
+            ".*KneePitch",
+            ".*AnklePitch", ".*AnkleRoll",
+            # Explicitly exclude: .*WristYaw, .*Hand, .*Finger.*, .*Thumb.*
+        ]
+
+        # Observations
+        self.observations.policy.foot_contact.params["sensor_cfg"].body_names = [".*_ankle"]
+
         # Weights and Parameters
         # -- Rewards
         self.rewards.track_lin_vel_xy_exp.weight = 1.0
@@ -51,13 +71,17 @@ class NaoEnvCfg(LocomotionVelocityEnvCfg):
         # -- -- Joint Limits and Deviations
         self.rewards.dof_pos_limits.weight = -1.0
         self.rewards.joint_deviation_hip_roll.weight = -0.1
+        self.rewards.joint_deviation_hip_roll.params["asset_cfg"].joint_names = [".*HipRoll"]
         self.rewards.joint_deviation_arms.weight = -0.1
-        self.rewards.joint_deviation_fingers.weight = -0.05
+        self.rewards.joint_deviation_arms.params["asset_cfg"].joint_names = [
+            ".*ShoulderPitch", ".*ShoulderRoll", ".*ElbowRoll", ".*ElbowYaw"
+        ]
+        self.rewards.joint_deviation_fingers.params["asset_cfg"].joint_names = [".*Finger.*",".*Thumb.*",]
+        self.rewards.joint_deviation_fingers = None # I took out fingers
         self.rewards.joint_deviation_torso.weight = -0.1
+        self.rewards.joint_deviation_torso.params["asset_cfg"].joint_names = [".*HipYawPitch"]
         # -- Events
         self.events.base_external_force_torque.params["asset_cfg"].body_names = ["base_link"]
-        # -- Observations
-        self.observations.policy.foot_contact.params["sensor_cfg"].body_names = [".*_ankle"]
         # -- Terminations
         self.terminations.base_height.params["asset_cfg"].body_names = ["base_link"]
         self.terminations.base_height.params["minimum_height"] = 0.2
@@ -77,12 +101,6 @@ class NaoEnvCfg(LocomotionVelocityEnvCfg):
                 "yaw": (0.0, 0.0),
             },
         }
-
-        # Commands
-        self.commands.base_velocity.ranges.lin_vel_x = (-0.2, 0.3)
-        self.commands.base_velocity.ranges.lin_vel_y = (-0.25, 0.25)
-        self.commands.base_velocity.ranges.ang_vel_z = (-1.5, 1.5)
-
 
 
 @configclass
