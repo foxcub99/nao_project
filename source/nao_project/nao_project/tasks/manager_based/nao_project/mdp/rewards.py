@@ -14,6 +14,7 @@ from __future__ import annotations
 import torch
 from typing import TYPE_CHECKING
 
+from isaaclab.assets import Articulation
 from isaaclab.managers import SceneEntityCfg
 from isaaclab.sensors import ContactSensor
 from isaaclab.utils.math import quat_rotate_inverse, yaw_quat
@@ -22,7 +23,7 @@ if TYPE_CHECKING:
     from isaaclab.envs import ManagerBasedRLEnv
 
 
-def feet_air_time_positive_biped(env, command_name: str, threshold: float, sensor_cfg: SceneEntityCfg) -> torch.Tensor:
+def feet_air_time_positive_biped(env, command_name: str, time_max_threshold: float, sensor_cfg: SceneEntityCfg) -> torch.Tensor:
     """Reward long steps taken by the feet for bipeds.
 
     This function rewards the agent for taking steps up to a specified threshold and also keep one foot at
@@ -35,10 +36,13 @@ def feet_air_time_positive_biped(env, command_name: str, threshold: float, senso
     air_time = contact_sensor.data.current_air_time[:, sensor_cfg.body_ids]
     contact_time = contact_sensor.data.current_contact_time[:, sensor_cfg.body_ids]
     in_contact = contact_time > 0.0
-    in_mode_time = torch.where(in_contact, contact_time, air_time)
     single_stance = torch.sum(in_contact.int(), dim=1) == 1
-    reward = torch.min(torch.where(single_stance.unsqueeze(-1), in_mode_time, 0.0), dim=1)[0]
-    reward = torch.clamp(reward, max=threshold)
+    
+    # Reward air time specifically when in single stance
+    air_time_during_single_stance = torch.where(single_stance.unsqueeze(-1), air_time, 0.0)
+    # Take max air time instead of min to encourage proper stepping
+    reward = torch.max(air_time_during_single_stance, dim=1)[0]
+    reward = torch.clamp(reward, max=time_max_threshold)
     # no reward for zero command
     reward *= torch.norm(env.command_manager.get_command(command_name)[:, :2], dim=1) > 0.1
     return reward
@@ -82,3 +86,111 @@ def track_ang_vel_z_world_exp(
     asset = env.scene[asset_cfg.name]
     ang_vel_error = torch.square(env.command_manager.get_command(command_name)[:, 2] - asset.data.root_ang_vel_w[:, 2])
     return torch.exp(-ang_vel_error / std**2)
+
+
+def joint_deviation_l1(env: ManagerBasedRLEnv, asset_cfg: SceneEntityCfg = SceneEntityCfg("robot")) -> torch.Tensor:
+    """Penalize joint positions that deviate from the default one."""
+    # extract the used quantities (to enable type-hinting)
+    asset: Articulation = env.scene[asset_cfg.name]
+    # compute out of limits constraints
+    angle = asset.data.joint_pos[:, asset_cfg.joint_ids] - asset.data.default_joint_pos[:, asset_cfg.joint_ids]
+    return torch.sum(torch.abs(angle), dim=1)
+
+
+def joint_deviation_l1_with_command_scaling(
+    env: ManagerBasedRLEnv, 
+    command_name: str, 
+    command_index: int,
+    asset_cfg: SceneEntityCfg = SceneEntityCfg("robot")
+) -> torch.Tensor:
+    """Penalize joint positions that deviate from the default one, scaled by command magnitude.
+    """
+    asset: Articulation = env.scene[asset_cfg.name]
+    
+    command = env.command_manager.get_command(command_name)[:, command_index]
+    
+    command_term = env.command_manager.get_term(command_name)
+    if command_index == 0:
+        min_range, max_range = command_term.cfg.ranges.lin_vel_x
+    elif command_index == 1:
+        min_range, max_range = command_term.cfg.ranges.lin_vel_y
+    elif command_index == 2:
+        min_range, max_range = command_term.cfg.ranges.ang_vel_z
+    else:
+        raise ValueError(f"Unsupported command_index: {command_index}. Supported values are 0 (x), 1 (y), 2 (z).")
+    
+    max_abs_command = max(abs(min_range), abs(max_range))
+    
+    scale_factor = torch.abs(command) / max_abs_command
+    scale_factor = torch.clamp(scale_factor, 0.0, 1.0)  # Ensure it's between 0 and 1
+    
+    angle = asset.data.joint_pos[:, asset_cfg.joint_ids] - asset.data.default_joint_pos[:, asset_cfg.joint_ids]
+    deviation_penalty = torch.sum(torch.abs(angle), dim=1)
+    
+    # Apply scaling based on command magnitude
+    return deviation_penalty * scale_factor
+
+
+# def joint_deviation_l1_with_adaptive_scaling(
+#     env: ManagerBasedRLEnv, 
+#     command_name: str, 
+#     command_index: int,
+#     min_scale: float = 0.0,
+#     max_scale: float = 1.0,
+#     threshold: float = 0.1,
+#     asset_cfg: SceneEntityCfg = SceneEntityCfg("robot")
+# ) -> torch.Tensor:
+#     """Penalize joint positions that deviate from the default one, with adaptive scaling based on command.
+    
+#     This is a more flexible version that allows you to set minimum and maximum scaling factors,
+#     and includes a threshold below which the penalty is minimized.
+    
+#     Args:
+#         env: The environment instance.
+#         command_name: Name of the command to use for scaling.
+#         command_index: Index of the command component to use for scaling.
+#         min_scale: Minimum scaling factor (when command is below threshold).
+#         max_scale: Maximum scaling factor (when command is at range limits).
+#         threshold: Command magnitude threshold below which minimum scaling is applied.
+#         asset_cfg: Configuration for the asset.
+        
+#     Returns:
+#         Adaptively scaled joint deviation penalty.
+#     """
+#     # extract the used quantities (to enable type-hinting)
+#     asset: Articulation = env.scene[asset_cfg.name]
+    
+#     # Get the current command value
+#     command = env.command_manager.get_command(command_name)[:, command_index]
+#     command_abs = torch.abs(command)
+    
+#     # Get the command ranges from the command manager
+#     command_term = env.command_manager.get_term(command_name)
+#     if command_index == 0:
+#         min_range, max_range = command_term.cfg.ranges.lin_vel_x
+#     elif command_index == 1:
+#         min_range, max_range = command_term.cfg.ranges.lin_vel_y
+#     elif command_index == 2:
+#         min_range, max_range = command_term.cfg.ranges.ang_vel_z
+#     else:
+#         raise ValueError(f"Unsupported command_index: {command_index}. Supported values are 0 (x), 1 (y), 2 (z).")
+    
+#     # Calculate the maximum absolute command value from the range
+#     max_abs_command = max(abs(min_range), abs(max_range))
+    
+#     # Apply threshold: below threshold use min_scale, above threshold scale linearly
+#     above_threshold = command_abs > threshold
+    
+#     # For commands above threshold, scale from min_scale to max_scale
+#     linear_scale = min_scale + (max_scale - min_scale) * (command_abs - threshold) / (max_abs_command - threshold)
+#     linear_scale = torch.clamp(linear_scale, min_scale, max_scale)
+    
+#     # Apply threshold logic
+#     scale_factor = torch.where(above_threshold, linear_scale, torch.full_like(command_abs, min_scale))
+    
+#     # compute joint deviation
+#     angle = asset.data.joint_pos[:, asset_cfg.joint_ids] - asset.data.default_joint_pos[:, asset_cfg.joint_ids]
+#     deviation_penalty = torch.sum(torch.abs(angle), dim=1)
+    
+#     # Apply scaling based on command magnitude
+#     return deviation_penalty * scale_factor

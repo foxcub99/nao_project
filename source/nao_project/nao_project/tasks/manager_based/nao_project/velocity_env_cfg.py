@@ -210,7 +210,7 @@ class RewardsCfg:
         params={
             "command_name": "base_velocity",
             "sensor_cfg": SceneEntityCfg("contact_forces", body_names=[".*_ankle"]),
-            "threshold": 0.18,  # Optimized for NAO's natural gait cycle
+            "time_max_threshold": 0.25,
         },
     )
     # Penalties
@@ -237,9 +237,22 @@ class RewardsCfg:
     )
     # -- Joint deviation 
     joint_deviation_hip_roll = RewTerm(
-        func=mdp.joint_deviation_l1,
+        func=mdp.joint_deviation_l1_with_command_scaling,
         weight=-0.1,
-        params={"asset_cfg": SceneEntityCfg("robot", joint_names=[".*HipRoll"])},
+        params={
+            "asset_cfg": SceneEntityCfg("robot", joint_names=[".*HipRoll"]),
+            "command_name": "base_velocity",
+            "command_index": 1,  # Y-axis linear velocity for sidestepping
+        },
+    )
+    joint_deviation_torso = RewTerm(
+        func=mdp.joint_deviation_l1_with_command_scaling,
+        weight=-0.1,
+        params={
+            "asset_cfg": SceneEntityCfg("robot", joint_names=[".*HipYawPitch"]),
+            "command_name": "base_velocity",
+            "command_index": 2,  # Z-axis angular velocity for torso rotation
+        },
     )
     joint_deviation_arms = RewTerm(
         func=mdp.joint_deviation_l1,
@@ -270,11 +283,6 @@ class RewardsCfg:
                 ],
             )
         },
-    )
-    joint_deviation_torso = RewTerm(
-        func=mdp.joint_deviation_l1,
-        weight=-0.1,
-        params={"asset_cfg": SceneEntityCfg("robot", joint_names=".*HipYawPitch",)},
     )
 
 @configclass
