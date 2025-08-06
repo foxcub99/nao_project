@@ -215,7 +215,7 @@ class RewardsCfg:
         params={
             "command_name": "base_velocity",
             "sensor_cfg": SceneEntityCfg("contact_forces", body_names=[".*_ankle"]),
-            "time_max_threshold": 0.25,
+            "time_threshold": 0.25, # reward = single stance air time
         },
     )
     # Penalties
@@ -242,21 +242,17 @@ class RewardsCfg:
     )
     # -- Joint deviation 
     joint_deviation_hip_roll = RewardTermCfg(
-        func=mdp.joint_deviation_l1_with_command_scaling,
+        func=mdp.joint_deviation_l1,
         weight=-0.1,
         params={
             "asset_cfg": SceneEntityCfg("robot", joint_names=[".*HipRoll"]),
-            "command_name": "base_velocity",
-            "command_index": 1,  # Y-axis linear velocity for sidestepping
         },
     )
     joint_deviation_torso = RewardTermCfg(
-        func=mdp.joint_deviation_l1_with_command_scaling,
+        func=mdp.joint_deviation_l1,
         weight=-0.1,
         params={
             "asset_cfg": SceneEntityCfg("robot", joint_names=[".*HipYawPitch"]),
-            "command_name": "base_velocity",
-            "command_index": 2,  # Z-axis angular velocity for torso rotation
         },
     )
     joint_deviation_arms = RewardTermCfg(

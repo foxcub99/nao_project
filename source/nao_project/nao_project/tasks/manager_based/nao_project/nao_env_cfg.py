@@ -51,10 +51,10 @@ class NaoEnvCfg(LocomotionVelocityEnvCfg):
 
         # Weights and Parameters
         # -- Rewards
-        self.rewards.track_lin_vel_xy_exp.weight = 1.0
-        self.rewards.track_ang_vel_z_exp.weight = 1.0
-        self.rewards.feet_air_time.weight = 0.75
-        self.rewards.feet_air_time.params["time_max_threshold"] = 0.25
+        self.rewards.track_lin_vel_xy_exp.weight = 1.2
+        self.rewards.track_ang_vel_z_exp.weight = 1.2
+        self.rewards.feet_air_time.weight = 1.0 # internal weight scales of command so this is the maximum
+        self.rewards.feet_air_time.params["time_threshold"] = 0.25
         self.rewards.feet_air_time.params["sensor_cfg"] = SceneEntityCfg(
             "contact_forces", body_names=[".*_ankle"]
         )
@@ -76,7 +76,7 @@ class NaoEnvCfg(LocomotionVelocityEnvCfg):
         self.rewards.flat_orientation_l2.weight = -1.0
         # -- -- Joint Limits and Deviations
         self.rewards.dof_pos_limits.weight = -1.0
-        self.rewards.joint_deviation_hip_roll.weight = -0.1
+        self.rewards.joint_deviation_hip_roll.weight = -0.02
         self.rewards.joint_deviation_hip_roll.params["asset_cfg"].joint_names = [".*HipRoll"]
         self.rewards.joint_deviation_arms.weight = -0.1
         self.rewards.joint_deviation_arms.params["asset_cfg"].joint_names = [
@@ -84,7 +84,7 @@ class NaoEnvCfg(LocomotionVelocityEnvCfg):
         ]
         self.rewards.joint_deviation_fingers.params["asset_cfg"].joint_names = [".*Finger.*",".*Thumb.*",]
         self.rewards.joint_deviation_fingers = None # I took out fingers
-        self.rewards.joint_deviation_torso.weight = -0.1
+        self.rewards.joint_deviation_torso.weight = -0.02
         self.rewards.joint_deviation_torso.params["asset_cfg"].joint_names = [".*HipYawPitch"]
         # -- Events
         self.events.base_external_force_torque.params["asset_cfg"].body_names = ["base_link"]

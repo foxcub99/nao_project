@@ -23,7 +23,7 @@ if TYPE_CHECKING:
     from isaaclab.envs import ManagerBasedRLEnv
 
 
-def feet_air_time_positive_biped(env, command_name: str, time_max_threshold: float, sensor_cfg: SceneEntityCfg) -> torch.Tensor:
+def feet_air_time_positive_biped(env, command_name: str, time_threshold: float, sensor_cfg: SceneEntityCfg) -> torch.Tensor:
     """Reward long steps taken by the feet for bipeds.
 
     This function rewards the agent for taking steps up to a specified threshold and also keep one foot at
@@ -42,9 +42,37 @@ def feet_air_time_positive_biped(env, command_name: str, time_max_threshold: flo
     air_time_during_single_stance = torch.where(single_stance.unsqueeze(-1), air_time, 0.0)
     # Take max air time instead of min to encourage proper stepping
     reward = torch.max(air_time_during_single_stance, dim=1)[0]
-    reward = torch.clamp(reward, max=time_max_threshold)
-    # no reward for zero command
-    reward *= torch.norm(env.command_manager.get_command(command_name)[:, :2], dim=1) > 0.1
+    reward = torch.clamp(reward, max=time_threshold)
+    
+    # Scale reward based on command magnitude
+    command = env.command_manager.get_command(command_name)[:, :3]
+    command_term = env.command_manager.get_term(command_name)
+    
+    # Get command ranges
+    lin_vel_x_range = command_term.cfg.ranges.lin_vel_x
+    lin_vel_y_range = command_term.cfg.ranges.lin_vel_y
+    ang_vel_z_range = command_term.cfg.ranges.ang_vel_z
+    
+    # For each command component, use the appropriate range limit based on sign
+    # Negative commands scale against minimum (lower bound), positive against maximum (upper bound)
+    max_x = torch.where(command[:, 0] >= 0, lin_vel_x_range[1], abs(lin_vel_x_range[0]))
+    max_y = torch.where(command[:, 1] >= 0, lin_vel_y_range[1], abs(lin_vel_y_range[0]))
+    max_z = torch.where(command[:, 2] >= 0, ang_vel_z_range[1], abs(ang_vel_z_range[0]))
+    
+    # Normalize each command component by its appropriate range limit
+    normalized_commands = torch.stack([
+        torch.abs(command[:, 0] / max_x),
+        torch.abs(command[:, 1] / max_y),
+        torch.abs(command[:, 2] / max_z)
+    ], dim=1)
+    
+    # Calculate overall command magnitude as norm of normalized commands
+    # Divide by sqrt(3) to ensure max possible norm equals 1.0
+    command_magnitude = torch.norm(normalized_commands, dim=1) / torch.sqrt(torch.tensor(3.0))
+    command_magnitude = torch.clamp(command_magnitude, 0.0, 1.0)
+    
+    # Apply command scaling to reward (0 for no command, 1 for max command)
+    reward *= command_magnitude
     return reward
 
 
