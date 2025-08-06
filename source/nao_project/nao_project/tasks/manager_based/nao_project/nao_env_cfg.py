@@ -100,7 +100,7 @@ class NaoEnvCfg(LocomotionVelocityEnvCfg):
         # -- Events
         self.events.base_external_force_torque.params["asset_cfg"].body_names = ["base_link"]
         # -- Terminations
-        self.rewards.termination_penalty = -5.0
+        self.rewards.termination_penalty.weight = -5.0
         self.terminations.base_height.params["asset_cfg"].body_names = ["base_link"]
         self.terminations.base_height.params["minimum_height"] = 0.2
 
