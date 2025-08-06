@@ -76,64 +76,49 @@ def feet_air_time_positive_biped(env, command_name: str, time_threshold: float, 
     return reward
 
 
-def feet_air_height(env, command_name: str, sensor_cfg: SceneEntityCfg, height_max_threshold: float) -> torch.Tensor:
-    """Reward feet that are in the air and above a certain height during single stance.
-    
-    This function encourages proper foot lifting during walking by rewarding foot height
-    when only one foot is in contact (single stance). The reward scales from 0 at min_height_threshold
-    to maximum at height_max_threshold, then clamps.
-    
+def feet_air_height(env, command_name: str, sensor_cfg: SceneEntityCfg, height_max_threshold: float, asset_cfg: SceneEntityCfg = SceneEntityCfg("robot")) -> torch.Tensor:
+    """Reward foot height during single stance for bipeds.
+
+    This function rewards the agent for lifting the non-contact foot higher during single stance.
+    The reward increases with foot height up to a specified threshold and is scaled by command magnitude.
+
     Args:
-        env: The environment instance.
-        command_name: Name of the command to use for scaling.
-        sensor_cfg: Configuration for the contact sensor.
-        height_max_threshold: Maximum height for reward clamping.
-        min_height_threshold: Minimum height before reward starts (prevents edge walking).
-        
+        env: The learning environment.
+        command_name: The name of the command term.
+        sensor_cfg: The contact sensor configuration.
+        height_max_threshold: Maximum height threshold for clamping the reward.
+        asset_cfg: The robot asset configuration.
+
     Returns:
-        Reward for proper foot lifting during single stance.
+        The computed reward tensor.
     """
     contact_sensor: ContactSensor = env.scene.sensors[sensor_cfg.name]
+    asset: Articulation = env.scene[asset_cfg.name]
     
-    # Get contact and height data
-    air_height = contact_sensor.data.current_air_height[:, sensor_cfg.body_ids]
+    # Get contact information
     contact_time = contact_sensor.data.current_contact_time[:, sensor_cfg.body_ids]
-    air_time = contact_sensor.data.current_air_time[:, sensor_cfg.body_ids]
-    
-    # Determine contact state
     in_contact = contact_time > 0.0
-    in_air = air_time > 0.0
-    
-    # Single stance: exactly one foot in contact
     single_stance = torch.sum(in_contact.int(), dim=1) == 1
     
-    # Only consider feet that are in the air during single stance
-    air_height_filtered = torch.where(
-        single_stance.unsqueeze(-1) & in_air, 
-        air_height, 
-        torch.zeros_like(air_height)
-    )
-    min_height_threshold = 0.03  # Minimum height to consider for reward
+    # Get foot positions in world frame (z-coordinate for height)
+    foot_positions = asset.data.body_pos_w[:, asset_cfg.body_ids, 2]  # z-coordinate for height
     
-    # Apply minimum height threshold - no reward below this height
-    above_min_height = air_height_filtered > min_height_threshold
-    height_above_min = torch.where(
-        above_min_height,
-        air_height_filtered - min_height_threshold,
-        torch.zeros_like(air_height_filtered)
+    # During single stance, reward the height of the airborne foot
+    # Create mask for airborne feet (not in contact)
+    airborne_feet = ~in_contact
+    
+    # Only consider height when in single stance
+    foot_heights_during_single_stance = torch.where(
+        single_stance.unsqueeze(-1) & airborne_feet, 
+        foot_positions, 
+        0.0
     )
     
-    # Scale the height to the reward range (0 to height_max_threshold - min_height_threshold)
-    height_range = height_max_threshold - min_height_threshold
-    scaled_height = height_above_min / height_range
+    # Take the maximum height of airborne feet during single stance
+    reward = torch.max(foot_heights_during_single_stance, dim=1)[0]
+    reward = torch.clamp(reward, max=height_max_threshold)
     
-    # Clamp the scaled height to [0, 1] range
-    scaled_height = torch.clamp(scaled_height, 0.0, 1.0)
-    
-    # Take the maximum height reward from any foot (only one should be in air during single stance)
-    reward = torch.max(scaled_height, dim=1)[0]
-    
-    # Scale reward based on command magnitude (no reward for standing still)
+    # Scale reward based on command magnitude (similar to feet_air_time_positive_biped)
     command = env.command_manager.get_command(command_name)[:, :3]
     command_term = env.command_manager.get_term(command_name)
     
@@ -142,25 +127,25 @@ def feet_air_height(env, command_name: str, sensor_cfg: SceneEntityCfg, height_m
     lin_vel_y_range = command_term.cfg.ranges.lin_vel_y
     ang_vel_z_range = command_term.cfg.ranges.ang_vel_z
     
-    # Calculate normalized command magnitude
+    # For each command component, use the appropriate range limit based on sign
     max_x = torch.where(command[:, 0] >= 0, lin_vel_x_range[1], abs(lin_vel_x_range[0]))
     max_y = torch.where(command[:, 1] >= 0, lin_vel_y_range[1], abs(lin_vel_y_range[0]))
     max_z = torch.where(command[:, 2] >= 0, ang_vel_z_range[1], abs(ang_vel_z_range[0]))
     
+    # Normalize each command component by its appropriate range limit
     normalized_commands = torch.stack([
         torch.abs(command[:, 0] / max_x),
         torch.abs(command[:, 1] / max_y),
         torch.abs(command[:, 2] / max_z)
     ], dim=1)
     
+    # Calculate overall command magnitude as norm of normalized commands
     command_magnitude = torch.norm(normalized_commands, dim=1) / torch.sqrt(torch.tensor(3.0))
     command_magnitude = torch.clamp(command_magnitude, 0.0, 1.0)
     
-    # Apply command scaling to reward
+    # Apply command scaling to reward (0 for no command, 1 for max command)
     reward *= command_magnitude
-    
     return reward
-    
 
 
 def feet_slide(env, sensor_cfg: SceneEntityCfg, asset_cfg: SceneEntityCfg = SceneEntityCfg("robot")) -> torch.Tensor:

@@ -62,18 +62,20 @@ class NaoEnvCfg(LocomotionVelocityEnvCfg):
         self.rewards.feet_air_height.params["sensor_cfg"] = SceneEntityCfg(
             "contact_forces", body_names=[".*_ankle"]
         )
-        self.rewards.feet_air_height.params["height_max_threshold"] = 0.15  # Max reward at 15cm height
-        self.rewards.feet_air_height = None
+        self.rewards.feet_air_height.params["asset_cfg"] = SceneEntityCfg(
+            "robot", body_names=[".*_ankle"]
+        )
+        self.rewards.feet_air_height.params["height_max_threshold"] = 0.12  # Max reward at 12cm height
         # -- Penalties
         self.rewards.feet_slide.weight = -0.1
         self.rewards.feet_slide.params["sensor_cfg"] = SceneEntityCfg(
             "contact_forces", body_names=[".*_ankle"]
         )
-        self.rewards.dof_torques_l2.weight = 0.0
+        self.rewards.dof_torques_l2.weight = -2.0e-8 # originally -2.0e-6
         self.rewards.dof_torques_l2.params["asset_cfg"] = SceneEntityCfg(
             "robot", joint_names=[".*Hip.*", ".*Knee.*"]
         )
-        self.rewards.dof_acc_l2.weight = 0.0
+        self.rewards.dof_acc_l2.weight = -1.0e-7
         self.rewards.dof_acc_l2.params["asset_cfg"] = SceneEntityCfg(
             "robot", joint_names=[".*Hip.*", ".*Knee.*"]
         )
@@ -82,7 +84,7 @@ class NaoEnvCfg(LocomotionVelocityEnvCfg):
         self.rewards.flat_orientation_l2.weight = -0.9
         # -- -- Joint Limits and Deviations
         self.rewards.dof_pos_limits.weight = -1.0
-        self.rewards.joint_deviation_hip_roll.weight = -0.02
+        self.rewards.joint_deviation_hip_roll.weight = -0.04
         self.rewards.joint_deviation_hip_roll.params["asset_cfg"].joint_names = [".*HipRoll"]
         self.rewards.joint_deviation_arms.weight = -0.1
         self.rewards.joint_deviation_arms.params["asset_cfg"].joint_names = [
@@ -90,7 +92,7 @@ class NaoEnvCfg(LocomotionVelocityEnvCfg):
         ]
         self.rewards.joint_deviation_fingers.params["asset_cfg"].joint_names = [".*Finger.*",".*Thumb.*",]
         self.rewards.joint_deviation_fingers = None # I took out fingers
-        self.rewards.joint_deviation_torso.weight = -0.02
+        self.rewards.joint_deviation_torso.weight = -0.04
         self.rewards.joint_deviation_torso.params["asset_cfg"].joint_names = [".*HipYawPitch"]
         # -- Events
         self.events.base_external_force_torque.params["asset_cfg"].body_names = ["base_link"]

@@ -224,6 +224,7 @@ class RewardsCfg:
         params={
             "command_name": "base_velocity",
             "sensor_cfg": SceneEntityCfg("contact_forces", body_names=[".*_ankle"]),
+            "asset_cfg": SceneEntityCfg("robot", body_names=[".*_ankle"]),
             "height_max_threshold": 0.25,  # clamp reward at this height
         },
     )
