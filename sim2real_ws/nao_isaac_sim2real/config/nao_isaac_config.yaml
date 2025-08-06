@@ -1,0 +1,40 @@
+# Example configuration for NAO Isaac RL Policy Node
+
+# Policy file path - Update this to point to your trained policy
+policy_file: "/path/to/your/trained_policy.pt"
+
+# Control frequency in Hz
+control_frequency: 83.0
+
+# Joint stiffness settings (0.0 to 1.0)
+default_stiffness: 1.0
+
+# FSR contact detection threshold
+fsr_contact_threshold: 5.0
+
+# Joint position limits (radians) - NAO V6 limits
+joint_limits:
+  head_yaw: [-2.0857, 2.0857]
+  head_pitch: [-0.6720, 0.5149]
+  l_shoulder_pitch: [-2.0857, 2.0857]
+  l_shoulder_roll: [0.0087, 1.5620]
+  l_elbow_yaw: [-2.0857, 2.0857]
+  l_elbow_roll: [-1.5620, -0.0087]
+  l_wrist_yaw: [-1.8238, 1.8238]
+  l_hip_yaw_pitch: [-1.1453, 0.7400]
+  l_hip_roll: [-0.3794, 0.7900]
+  l_hip_pitch: [-1.7732, 0.4840]
+  l_knee_pitch: [-0.0923, 2.1125]
+  l_ankle_pitch: [-1.1863, 0.9320]
+  l_ankle_roll: [-0.7854, 0.5240]
+  r_hip_yaw_pitch: [-1.1453, 0.7400]
+  r_hip_roll: [-0.7900, 0.3794]
+  r_hip_pitch: [-1.7732, 0.4840]
+  r_knee_pitch: [-0.0923, 2.1125]
+  r_ankle_pitch: [-1.1863, 0.9320]
+  r_ankle_roll: [-0.5240, 0.7854]
+  r_shoulder_pitch: [-2.0857, 2.0857]
+  r_shoulder_roll: [-1.5620, -0.0087]
+  r_elbow_yaw: [-2.0857, 2.0857]
+  r_elbow_roll: [0.0087, 1.5620]
+  r_wrist_yaw: [-1.8238, 1.8238]

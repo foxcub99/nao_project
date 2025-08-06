@@ -1,0 +1,1 @@
+idk why nao_lola is broken, we don't need it. Run with ```colcon build --packages-ignore nao_lola```

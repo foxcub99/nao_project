@@ -1,0 +1,4 @@
+[submodule "nao_lola"]
+	path = nao_lola
+	url = https://github.com/ros-sports/nao_lola.git
+	branch = sensor-data-qos-subscribers
