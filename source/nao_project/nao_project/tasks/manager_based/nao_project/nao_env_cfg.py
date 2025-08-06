@@ -5,9 +5,11 @@
 
 from isaaclab.managers import SceneEntityCfg
 from isaaclab.utils import configclass
+from isaaclab.managers import CurriculumTermCfg
 
 from . import mdp
 from .velocity_env_cfg import LocomotionVelocityEnvCfg
+from .nao_env_cfg import NaoSpecificEnvCfg 
 
 ##
 # Pre-defined configs
@@ -15,7 +17,233 @@ from .velocity_env_cfg import LocomotionVelocityEnvCfg
 from ....assets.nao import NAO_CFG
 
 @configclass
-class NaoEnvCfg(LocomotionVelocityEnvCfg):
+class NaoEnvCfg(NaoSpecificEnvCfg):
+    class CurriculumCfg:
+        def __init__(self):
+            self.reward_change_1 = None
+            self.reward_change_2 = None
+            self.reward_change_3 = None
+            self.reward_change_4 = None
+            self.reward_change_5 = None
+            self.reward_change_6 = None
+            self.reward_change_air1 = None
+            self.reward_change_air2 = None
+            self.reward_change_air3 = None
+            self.reward_change_air4 = None
+            self.reward_change_air5 = None
+            self.reward_change_air6 = None
+            self.command_change_1 = None
+            self.command_change_2 = None
+            self.command_change_3 = None
+            self.command_change_4 = None
+            self.command_change_5 = None
+            self.command_change_6 = None
+            self.command_change_7 = None
+            self.command_change_8 = None
+
+    curriculum: CurriculumCfg = CurriculumCfg()
+    def __post_init__(self):
+        """Since we want NaoSpecificEnvCfg post init to run as the initial values for curriculum"""
+        super().__post_init__()
+
+        # Stage 1
+        self.command_change_1 = CurriculumTermCfg(
+            func=mdp.modify_term_cfg,
+            params={
+                "address": "commands.base_velocity",
+                "term_name": "ranges.lin_vel_x",
+                "value": (0, 0.1),
+                "num_steps": 0,
+            }
+        )
+
+        # Stage 2
+        self.command_change_2 = CurriculumTermCfg(
+            func=mdp.modify_term_cfg,
+            params={
+                "address": "commands.base_velocity",
+                "term_name": "ranges.lin_vel_x",
+                "value": (0, 0.2),
+                "num_steps": 6000,
+            }
+        )
+        self.reward_change_1 = CurriculumTermCfg(
+            func=mdp.modify_reward_weight,
+            params={
+                "term_name": "track_lin_vel_xy_exp",
+                "weight": 2.0,
+                "num_steps": 8000,
+            },
+        )
+        self.reward_change_air1 = CurriculumTermCfg(
+            func=mdp.modify_reward_weight,
+            params={
+                "term_name": "feet_air_time",
+                "weight": 1.5,
+                "num_steps": 8000,
+            },
+        )
+        self.reward_change_air2 = CurriculumTermCfg(
+            func=mdp.modify_reward_weight,
+            params={
+                "term_name": "feet_air_height",
+                "weight": 1.5,
+                "num_steps": 8000,
+            },
+        )
+
+        # Stage 3
+        self.command_change_3 = CurriculumTermCfg(
+            func=mdp.modify_term_cfg,
+            params={
+                "address": "commands.base_velocity",
+                "term_name": "ranges.lin_vel_x",
+                "value": (0, 0.3),
+                "num_steps": 12000,
+            }
+        )
+        self.reward_change_2 = CurriculumTermCfg(
+            func=mdp.modify_reward_weight,
+            params={
+                "term_name": "track_lin_vel_xy_exp",
+                "weight": 3.0,
+                "num_steps": 12000,
+            },
+        )
+
+        # Stage 4
+        self.command_change_4 = CurriculumTermCfg(
+            func=mdp.modify_term_cfg,
+            params={
+                "address": "commands.base_velocity",
+                "term_name": "ranges.lin_vel_x",
+                "value": (-0.2, 0.3),
+                "num_steps": 18000,
+            }
+        )
+        self.reward_change_air3 = CurriculumTermCfg(
+            func=mdp.modify_reward_weight,
+            params={
+                "term_name": "feet_air_time",
+                "weight": 1.0,
+                "num_steps": 18000,
+            },
+        )
+        self.reward_change_air4 = CurriculumTermCfg(
+            func=mdp.modify_reward_weight,
+            params={
+                "term_name": "feet_air_height",
+                "weight": 1.0,
+                "num_steps": 18000,
+            },
+        )
+
+        # Stage 5
+        self.command_change_5 = CurriculumTermCfg(
+            func=mdp.modify_term_cfg,
+            params={
+                "address": "commands.base_velocity",
+                "term_name": "ranges.lin_vel_y",
+                "value": (-0.2, 0.2),
+                "num_steps": 24000,
+            }
+        )
+        self.command_change_6 = CurriculumTermCfg(
+            func=mdp.modify_term_cfg,
+            params={
+                "address": "commands.base_velocity",
+                "term_name": "ranges.lin_vel_x",
+                "value": (-0.05, 0.1),
+                "num_steps": 24000,
+            }
+        )
+        self.reward_change_3 = CurriculumTermCfg(
+            func=mdp.modify_reward_weight,
+            params={
+                "term_name": "track_lin_vel_xy_exp",
+                "weight": 3.0,
+                "num_steps": 24000,
+            },
+        )
+        self.reward_change_4 = CurriculumTermCfg(
+            func=mdp.modify_reward_weight,
+            params={
+                "term_name": "joint_deviation_hip_roll",
+                "weight": -4e-7,
+                "num_steps": 24000,
+            },
+        )
+
+        # Stage 6
+        self.reward_change_5 = CurriculumTermCfg(
+            func=mdp.modify_reward_weight,
+            params={
+                "term_name": "track_lin_vel_xy_exp",
+                "weight": 1.0,
+                "num_steps": 30000,
+            },
+        )
+        self.reward_change_6 = CurriculumTermCfg(
+            func=mdp.modify_reward_weight,
+            params={
+                "term_name": "track_ang_vel_z_exp",
+                "weight": 3.0,
+                "num_steps": 30000,
+            },
+        )
+        self.command_change_7 = CurriculumTermCfg(
+            func=mdp.modify_term_cfg,
+            params={
+                "address": "commands.base_velocity",
+                "term_name": "ranges.ang_vel_z",
+                "value": (-1.0, 1.0),
+                "num_steps": 30000,
+            }
+        )
+        self.command_change_8 = CurriculumTermCfg(
+            func=mdp.modify_term_cfg,
+            params={
+                "address": "commands.base_velocity",
+                "term_name": "ranges.lin_vel_x",
+                "value": (-0.2, 0.3),
+                "num_steps": 30000,
+            }
+        )
+        self.reward_change_air5 = CurriculumTermCfg(
+            func=mdp.modify_reward_weight,
+            params={
+                "term_name": "feet_air_time",
+                "weight": 1.5,
+                "num_steps": 30000,
+            },
+        )
+        self.reward_change_air6 = CurriculumTermCfg(
+            func=mdp.modify_reward_weight,
+            params={
+                "term_name": "feet_air_height",
+                "weight": 1.5,
+                "num_steps": 30000,
+            },
+        )
+        self.reward_change_7 = CurriculumTermCfg(
+            func=mdp.modify_reward_weight,
+            params={
+                "term_name": "joint_deviation_hip_roll",
+                "weight": -0.04,
+                "num_steps": 30000,
+            },
+        )
+        self.reward_change_8 = CurriculumTermCfg(
+            func=mdp.modify_reward_weight,
+            params={
+                "term_name": "joint_deviation_torso",
+                "weight": 4e-7,
+                "num_steps": 30000,
+            },
+        )
+
+@configclass
+class NaoSpecificEnvCfg(LocomotionVelocityEnvCfg):
     def __post_init__(self):
         super().__post_init__()
 
@@ -24,9 +252,9 @@ class NaoEnvCfg(LocomotionVelocityEnvCfg):
         self.scene.contact_forces.prim_path=f"/World/envs/env_.*/Robot/NaoH25V50/.*"
 
         # Commands
-        self.commands.base_velocity.ranges.lin_vel_x = (-0.2, 0.3)
-        self.commands.base_velocity.ranges.lin_vel_y = (-0.25, 0.25)
-        self.commands.base_velocity.ranges.ang_vel_z = (-1.5, 1.5)
+        self.commands.base_velocity.ranges.lin_vel_x = (0.0, 0.0)
+        self.commands.base_velocity.ranges.lin_vel_y = (0.0, 0.0)
+        self.commands.base_velocity.ranges.ang_vel_z = (0.0, 0.0)
 
         # Actions
         self.actions.joint_pos.joint_names = [
@@ -51,14 +279,14 @@ class NaoEnvCfg(LocomotionVelocityEnvCfg):
 
         # Weights and Parameters
         # -- Rewards
-        self.rewards.track_lin_vel_xy_exp.weight = 1.2
-        self.rewards.track_ang_vel_z_exp.weight = 1.2
-        self.rewards.feet_air_time.weight = 1.0 # internal weight scales of command so this is the maximum
+        self.rewards.track_lin_vel_xy_exp.weight = 1.0
+        self.rewards.track_ang_vel_z_exp.weight = 1.0
+        self.rewards.feet_air_time.weight = 2.0 # internal weight scales of command so this is the maximum
         self.rewards.feet_air_time.params["time_threshold"] = 0.25
         self.rewards.feet_air_time.params["sensor_cfg"] = SceneEntityCfg(
             "contact_forces", body_names=[".*_ankle"]
         )
-        self.rewards.feet_air_height.weight = 0.5
+        self.rewards.feet_air_height.weight = 2.0
         self.rewards.feet_air_height.params["sensor_cfg"] = SceneEntityCfg(
             "contact_forces", body_names=[".*_ankle"]
         )

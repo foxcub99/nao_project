@@ -309,65 +309,7 @@ class TerminationsCfg:
         },
     )
     
-
-
-@configclass
-class CurriculumCfg:
-    """Curriculum terms for the MDP."""
-
-    # Scene
-
-    # Commands
-
-    # Actions
-
-    # Observations
     
-    # Events
-
-    # Rewards
-    # -- Rewards
-    # -- Penalties
-
-    
-    # # NEW: Reward weight curriculum - gradually shift focus from stability to performance
-    # reward_weights = CurriculumTermCfg(
-    #     func=mdp.modify_reward_weights,
-    #     params={
-    #         "initial_weights": {
-    #             "track_lin_vel_xy_exp": 0.5,  # Start with lower velocity tracking importance
-    #             "track_ang_vel_z_exp": 0.3,   # Lower angular velocity importance
-    #             "feet_air_time": 1.0,         # High importance on proper stepping
-    #             "flat_orientation_l2": 1.2,   # High importance on stability
-    #             "action_rate_l2": 0.02,       # Higher penalty on jerky movements
-    #         },
-    #         "final_weights": {
-    #             "track_lin_vel_xy_exp": 1.3,  # End with higher velocity tracking
-    #             "track_ang_vel_z_exp": 1.0,   # Higher angular velocity importance
-    #             "feet_air_time": 0.75,        # Reduced stepping importance
-    #             "flat_orientation_l2": 0.8,   # Reduced stability penalty
-    #             "action_rate_l2": 0.005,      # Lower penalty on movements
-    #         },
-    #     }
-    # )
-    
-    # # NEW: Command difficulty curriculum - start with easier commands
-    # command_difficulty = CurriculumTermCfg(
-    #     func=mdp.modify_command_ranges,
-    #     params={
-    #         "initial_ranges": {
-    #             "lin_vel_x": (0.0, 0.5),     # Start with forward walking only
-    #             "lin_vel_y": (-0.2, 0.2),    # Limited lateral movement
-    #             "ang_vel_z": (-0.5, 0.5),    # Limited turning
-    #         },
-    #         "final_ranges": {
-    #             "lin_vel_x": (-0.5, 1.0),    # Full velocity range
-    #             "lin_vel_y": (-0.5, 0.5),    # Full lateral movement
-    #             "ang_vel_z": (-1.0, 1.0),    # Full turning range
-    #         },
-    #     }
-    # )
-
 
 ##
 # Environment configuration
@@ -388,7 +330,6 @@ class LocomotionVelocityEnvCfg(ManagerBasedRLEnvCfg):
     rewards: RewardsCfg = RewardsCfg()
     terminations: TerminationsCfg = TerminationsCfg()
     events: EventCfg = EventCfg()
-    curriculum: CurriculumCfg = CurriculumCfg()
 
     def __post_init__(self):
         """Post initialization."""
@@ -397,6 +338,7 @@ class LocomotionVelocityEnvCfg(ManagerBasedRLEnvCfg):
         self.episode_length_s = 20.0
         # simulation settings
         self.sim.dt = 0.005 # TODO match this with nao
+        # self.sim.dt = 0.004  # 4ms timestep for 250Hz physics (3x faster than 83Hz robot)~
         self.sim.render_interval = self.decimation
         self.sim.physics_material = self.scene.terrain.physics_material
         self.sim.physx.gpu_max_rigid_patch_count = 10 * 2**15
