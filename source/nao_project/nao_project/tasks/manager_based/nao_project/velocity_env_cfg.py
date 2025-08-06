@@ -334,10 +334,10 @@ class LocomotionVelocityEnvCfg(ManagerBasedRLEnvCfg):
     def __post_init__(self):
         """Post initialization."""
         # general settings
-        self.decimation = 4
-        self.episode_length_s = 20.0
+        self.decimation = 3
+        self.episode_length_s = 5.0
         # simulation settings
-        self.sim.dt = 0.005 # TODO match this with nao
+        self.sim.dt = 0.004 # TODO match this with nao
         # self.sim.dt = 0.004  # 4ms timestep for 250Hz physics (3x faster than 83Hz robot)~
         self.sim.render_interval = self.decimation
         self.sim.physics_material = self.scene.terrain.physics_material
