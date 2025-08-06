@@ -59,6 +59,11 @@ def feet_air_time_positive_biped(env, command_name: str, time_threshold: float, 
     max_y = torch.where(command[:, 1] >= 0, lin_vel_y_range[1], abs(lin_vel_y_range[0]))
     max_z = torch.where(command[:, 2] >= 0, ang_vel_z_range[1], abs(ang_vel_z_range[0]))
     
+    # Guard against zero ranges to prevent division by zero
+    max_x = torch.clamp(max_x, min=1e-8)
+    max_y = torch.clamp(max_y, min=1e-8)
+    max_z = torch.clamp(max_z, min=1e-8)
+    
     # Normalize each command component by its appropriate range limit
     normalized_commands = torch.stack([
         torch.abs(command[:, 0] / max_x),
@@ -132,6 +137,11 @@ def feet_air_height(env, command_name: str, sensor_cfg: SceneEntityCfg, height_m
     max_y = torch.where(command[:, 1] >= 0, lin_vel_y_range[1], abs(lin_vel_y_range[0]))
     max_z = torch.where(command[:, 2] >= 0, ang_vel_z_range[1], abs(ang_vel_z_range[0]))
     
+    # Guard against zero ranges to prevent division by zero
+    max_x = torch.clamp(max_x, min=1e-8)
+    max_y = torch.clamp(max_y, min=1e-8)
+    max_z = torch.clamp(max_z, min=1e-8)
+    
     # Normalize each command component by its appropriate range limit
     normalized_commands = torch.stack([
         torch.abs(command[:, 0] / max_x),
@@ -187,12 +197,4 @@ def track_ang_vel_z_world_exp(
     ang_vel_error = torch.square(env.command_manager.get_command(command_name)[:, 2] - asset.data.root_ang_vel_w[:, 2])
     return torch.exp(-ang_vel_error / std**2)
 
-
-# def joint_deviation_l1(env: ManagerBasedRLEnv, asset_cfg: SceneEntityCfg = SceneEntityCfg("robot")) -> torch.Tensor:
-#     """Penalize joint positions that deviate from the default one."""
-#     # extract the used quantities (to enable type-hinting)
-#     asset: Articulation = env.scene[asset_cfg.name]
-#     # compute out of limits constraints
-#     angle = asset.data.joint_pos[:, asset_cfg.joint_ids] - asset.data.default_joint_pos[:, asset_cfg.joint_ids]
-#     return torch.sum(torch.abs(angle), dim=1)
 
