@@ -41,6 +41,12 @@ class NaoEnvCfg(LocomotionVelocityEnvCfg):
         ]
 
         # Observations
+        self.observations.policy.joint_pos.params = {
+            "asset_cfg": SceneEntityCfg("robot", joint_names=self.actions.joint_pos.joint_names)
+        }
+        self.observations.policy.joint_vel.params = {
+            "asset_cfg": SceneEntityCfg("robot", joint_names=self.actions.joint_pos.joint_names)
+        }
         self.observations.policy.foot_contact.params["sensor_cfg"].body_names = [".*_ankle"]
 
         # Weights and Parameters
