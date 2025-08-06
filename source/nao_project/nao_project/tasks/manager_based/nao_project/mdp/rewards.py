@@ -188,11 +188,11 @@ def track_ang_vel_z_world_exp(
     return torch.exp(-ang_vel_error / std**2)
 
 
-def joint_deviation_l1(env: ManagerBasedRLEnv, asset_cfg: SceneEntityCfg = SceneEntityCfg("robot")) -> torch.Tensor:
-    """Penalize joint positions that deviate from the default one."""
-    # extract the used quantities (to enable type-hinting)
-    asset: Articulation = env.scene[asset_cfg.name]
-    # compute out of limits constraints
-    angle = asset.data.joint_pos[:, asset_cfg.joint_ids] - asset.data.default_joint_pos[:, asset_cfg.joint_ids]
-    return torch.sum(torch.abs(angle), dim=1)
+# def joint_deviation_l1(env: ManagerBasedRLEnv, asset_cfg: SceneEntityCfg = SceneEntityCfg("robot")) -> torch.Tensor:
+#     """Penalize joint positions that deviate from the default one."""
+#     # extract the used quantities (to enable type-hinting)
+#     asset: Articulation = env.scene[asset_cfg.name]
+#     # compute out of limits constraints
+#     angle = asset.data.joint_pos[:, asset_cfg.joint_ids] - asset.data.default_joint_pos[:, asset_cfg.joint_ids]
+#     return torch.sum(torch.abs(angle), dim=1)
 

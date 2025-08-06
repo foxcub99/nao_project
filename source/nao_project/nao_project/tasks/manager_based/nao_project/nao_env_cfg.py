@@ -102,6 +102,7 @@ class NaoEnvCfg(LocomotionVelocityEnvCfg):
         # -- Terminations
         self.terminations.base_height.params["asset_cfg"].body_names = ["base_link"]
         self.terminations.base_height.params["minimum_height"] = 0.2
+        self.terminations.base_height.weight = -5.0
 
         # Randomization
         self.events.push_robot = None
