@@ -209,25 +209,25 @@ class RewardsCfg:
     track_ang_vel_z_exp = RewardTermCfg(
         func=mdp.track_ang_vel_z_world_exp, weight=2.0, params={"command_name": "base_velocity", "std": 0.5}
     )
-    feet_air_time = RewardTermCfg(
+    feet_air_time_height = RewardTermCfg(
         func=mdp.feet_air_time_positive_biped,
         weight=0.25,
         params={
             "command_name": "base_velocity",
             "sensor_cfg": SceneEntityCfg("contact_forces", body_names=[".*_ankle"]),
-            "time_threshold": 0.25, # reward = single stance air time
+            "threshold": 0.25, # reward = single stance air time
+            "max_threshold": 0.7, # reward = single stance air time
         },
     )
-    feet_air_height = RewardTermCfg(
-        func=mdp.feet_air_height,
-        weight=0.5,
-        params={
-            "command_name": "base_velocity",
-            "sensor_cfg": SceneEntityCfg("contact_forces", body_names=[".*_ankle"]),
-            "asset_cfg": SceneEntityCfg("robot", body_names=[".*_ankle"]),
-            "height_max_threshold": 0.25,  # clamp reward at this height
-        },
-    )
+    # feet_air_height = RewardTermCfg(
+    #     func=mdp.feet_air_height,
+    #     weight=0.5,
+    #     params={
+    #         "command_name": "base_velocity",
+    #         "sensor_cfg": SceneEntityCfg("contact_forces", body_names=[".*_ankle"]),
+    #         "asset_cfg": SceneEntityCfg("robot", body_names=[".*_ankle"]),
+    #     },
+    # )
     # Penalties
     termination_penalty = RewardTermCfg(func=mdp.is_terminated, weight=-200.0)
     action_rate_l2 = RewardTermCfg(func=mdp.action_rate_l2, weight=-0.01)

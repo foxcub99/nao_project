@@ -56,19 +56,12 @@ class NaoEnvCfg(LocomotionVelocityEnvCfg):
         # -- Rewards
         self.rewards.track_lin_vel_xy_exp.weight = 1.0
         self.rewards.track_ang_vel_z_exp.weight = 1.0
-        self.rewards.feet_air_time.weight = 2.0 # internal weight scales of command so this is the maximum
-        self.rewards.feet_air_time.params["time_threshold"] = 0.25
-        self.rewards.feet_air_time.params["sensor_cfg"] = SceneEntityCfg(
+        self.rewards.feet_air_time_height.weight = 0.3
+        self.rewards.feet_air_time_height.params["threshold"] = 0.35
+        self.rewards.feet_air_time_height.params["max_threshold"] = 0.7
+        self.rewards.feet_air_time_height.params["sensor_cfg"] = SceneEntityCfg(
             "contact_forces", body_names=[".*_ankle"]
         )
-        self.rewards.feet_air_height.weight = 2.0
-        self.rewards.feet_air_height.params["sensor_cfg"] = SceneEntityCfg(
-            "contact_forces", body_names=[".*_ankle"]
-        )
-        self.rewards.feet_air_height.params["asset_cfg"] = SceneEntityCfg(
-            "robot", body_names=[".*_ankle"]
-        )
-        self.rewards.feet_air_height.params["height_max_threshold"] = 0.12  # Max reward at 12cm height
         # -- Penalties
         self.rewards.feet_slide.weight = -0.1
         self.rewards.feet_slide.params["sensor_cfg"] = SceneEntityCfg(
@@ -100,7 +93,7 @@ class NaoEnvCfg(LocomotionVelocityEnvCfg):
         # -- Events
         self.events.base_external_force_torque.params["asset_cfg"].body_names = ["base_link"]
         # -- Terminations
-        self.rewards.termination_penalty.weight = -5.0
+        self.rewards.termination_penalty.weight = -3.0
         self.terminations.base_height.params["asset_cfg"].body_names = ["base_link"]
         self.terminations.base_height.params["minimum_height"] = 0.2
 
