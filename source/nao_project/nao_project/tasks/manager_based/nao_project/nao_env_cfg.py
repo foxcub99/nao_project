@@ -56,6 +56,8 @@ class NaoEnvCfg(LocomotionVelocityEnvCfg):
         self.rewards.joint_deviation_torso.weight = -0.1
         # -- Events
         self.events.base_external_force_torque.params["asset_cfg"].body_names = ["base_link"]
+        # -- Observations
+        self.observations.policy.foot_contact.params["sensor_cfg"].body_names = [".*_ankle"]
         # -- Terminations
         self.terminations.base_height.params["asset_cfg"].body_names = ["base_link"]
         self.terminations.base_height.params["minimum_height"] = 0.2

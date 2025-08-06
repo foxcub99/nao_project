@@ -104,7 +104,6 @@ class ObservationsCfg:
     @configclass
     class PolicyCfg(ObsGroup):
         """Observations for policy group."""
-        # TODO put feet contact in here
 
         base_lin_vel = ObsTerm(func=mdp.base_lin_vel, noise=Unoise(n_min=-0.1, n_max=0.1))
         base_ang_vel = ObsTerm(func=mdp.base_ang_vel, noise=Unoise(n_min=-0.2, n_max=0.2))
@@ -116,6 +115,12 @@ class ObservationsCfg:
         joint_pos = ObsTerm(func=mdp.joint_pos_rel, noise=Unoise(n_min=-0.01, n_max=0.01))
         joint_vel = ObsTerm(func=mdp.joint_vel_rel, noise=Unoise(n_min=-1.5, n_max=1.5))
         actions = ObsTerm(func=mdp.last_action)
+        foot_contact = ObsTerm(
+            func=mdp.foot_contact,
+            params={
+                "sensor_cfg": SceneEntityCfg("contact_forces", body_names=[".*_ankle"]),
+            }
+        )
 
         def __post_init__(self):
             self.enable_corruption = True
@@ -290,11 +295,6 @@ class TerminationsCfg:
     """Termination terms for the MDP."""
 
     time_out = DoneTerm(func=mdp.time_out, time_out=True)
-    # base_contact = DoneTerm(
-    #     func=mdp.illegal_contact,
-    #     params={"sensor_cfg": SceneEntityCfg("contact_forces", body_names="base"), "threshold": 1.0},
-    # )
-    # Terminate if base_link drops below a certain height (useful for detecting falls)
     base_height = DoneTerm(
         func=mdp.root_height_below_minimum,
         params={
