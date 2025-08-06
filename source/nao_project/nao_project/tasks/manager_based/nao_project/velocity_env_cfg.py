@@ -218,6 +218,15 @@ class RewardsCfg:
             "time_threshold": 0.25, # reward = single stance air time
         },
     )
+    feet_air_height = RewardTermCfg(
+        func=mdp.feet_air_height,
+        weight=0.5,
+        params={
+            "command_name": "base_velocity",
+            "sensor_cfg": SceneEntityCfg("contact_forces", body_names=[".*_ankle"]),
+            "height_max_threshold": 0.25,  # clamp reward at this height
+        },
+    )
     # Penalties
     termination_penalty = RewardTermCfg(func=mdp.is_terminated, weight=-200.0)
     action_rate_l2 = RewardTermCfg(func=mdp.action_rate_l2, weight=-0.01)
@@ -304,6 +313,20 @@ class TerminationsCfg:
 @configclass
 class CurriculumCfg:
     """Curriculum terms for the MDP."""
+
+    # Scene
+
+    # Commands
+
+    # Actions
+
+    # Observations
+    
+    # Events
+
+    # Rewards
+    # -- Rewards
+    # -- Penalties
 
     
     # # NEW: Reward weight curriculum - gradually shift focus from stability to performance

@@ -58,22 +58,28 @@ class NaoEnvCfg(LocomotionVelocityEnvCfg):
         self.rewards.feet_air_time.params["sensor_cfg"] = SceneEntityCfg(
             "contact_forces", body_names=[".*_ankle"]
         )
+        self.rewards.feet_air_height.weight = 0.5
+        self.rewards.feet_air_height.params["sensor_cfg"] = SceneEntityCfg(
+            "contact_forces", body_names=[".*_ankle"]
+        )
+        self.rewards.feet_air_height.params["height_max_threshold"] = 0.15  # Max reward at 15cm height
+        self.rewards.feet_air_height = None
         # -- Penalties
         self.rewards.feet_slide.weight = -0.1
         self.rewards.feet_slide.params["sensor_cfg"] = SceneEntityCfg(
             "contact_forces", body_names=[".*_ankle"]
         )
-        self.rewards.dof_torques_l2.weight = -2.0e-6
+        self.rewards.dof_torques_l2.weight = 0.0
         self.rewards.dof_torques_l2.params["asset_cfg"] = SceneEntityCfg(
             "robot", joint_names=[".*Hip.*", ".*Knee.*"]
         )
-        self.rewards.dof_acc_l2.weight = -1.0e-7
+        self.rewards.dof_acc_l2.weight = 0.0
         self.rewards.dof_acc_l2.params["asset_cfg"] = SceneEntityCfg(
             "robot", joint_names=[".*Hip.*", ".*Knee.*"]
         )
         self.rewards.action_rate_l2.weight = -0.005
         self.rewards.lin_vel_z_l2.weight = -0.2
-        self.rewards.flat_orientation_l2.weight = -1.0
+        self.rewards.flat_orientation_l2.weight = -0.9
         # -- -- Joint Limits and Deviations
         self.rewards.dof_pos_limits.weight = -1.0
         self.rewards.joint_deviation_hip_roll.weight = -0.02
