@@ -45,9 +45,9 @@ class NaoEnvCfg3(NaoEnvCfg):
 class NaoEnvCfg4(NaoEnvCfg):
     class CurriculumCfg:
         def __init__(self):
-            self.reward_change_1 = None
-            self.reward_change_2 = None
-            self.episode_change_1 = None
+            reward_change_1 = None
+            reward_change_2 = None
+            episode_change_1 = None
     curriculum: CurriculumCfg = CurriculumCfg()
     def __post_init__(self):
         super().__post_init__()
@@ -72,7 +72,7 @@ class NaoEnvCfg4(NaoEnvCfg):
                 "num_steps": 8000,
             },
         )
-        self.episode_change_1 = CurriculumTermCfg(
+        self.curriculum.episode_change_1 = CurriculumTermCfg(
             func=mdp.change_episode_length_s,
             params={
                 "new_length": 8.0,
@@ -86,8 +86,8 @@ class NaoEnvCfg4(NaoEnvCfg):
 class NaoEnvCfg5(NaoEnvCfg):
     class CurriculumCfg:
         def __init__(self):
-            self.episode_change_1 = None
-            self.episode_change_2 = None
+            episode_change_1 = None
+            episode_change_2 = None
     curriculum: CurriculumCfg = CurriculumCfg()
     def __post_init__(self):
         super().__post_init__()
@@ -119,17 +119,17 @@ class NaoEnvCfg5(NaoEnvCfg):
 class NaoEnvCfg6(NaoEnvCfg):
     class CurriculumCfg:
         def __init__(self):
-            self.command_change_1 = None
-            self.command_change_2 = None
-            self.command_change_3 = None
-            self.command_change_4 = None
-            self.episode_change_1 = None
-            self.episode_change_2 = None
-            self.episode_change_3 = None
-            self.reward_change_1 = None
-            self.reward_change_2 = None
-            self.reward_change_3 = None
-            self.reward_change_4 = None
+            command_change_1 = None
+            command_change_2 = None
+            command_change_3 = None
+            command_change_4 = None
+            episode_change_1 = None
+            episode_change_2 = None
+            episode_change_3 = None
+            reward_change_1 = None
+            reward_change_2 = None
+            reward_change_3 = None
+            reward_change_4 = None
     curriculum: CurriculumCfg = CurriculumCfg()
     def __post_init__(self):
         super().__post_init__()
