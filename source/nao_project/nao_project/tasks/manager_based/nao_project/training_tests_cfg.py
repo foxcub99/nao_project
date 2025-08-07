@@ -12,11 +12,30 @@ from .nao_env_cfg import NaoEnvCfg
 
 @configclass
 class NaoEnvCfg1(NaoEnvCfg):
+    @configclass
+    class CurriculumCfg:
+        reward_change_1 = None
+        reward_change_2 = None
+        episode_change_1 = None
+    curriculum: CurriculumCfg = CurriculumCfg()
     def __post_init__(self):
         super().__post_init__()
         self.commands.base_velocity.ranges.lin_vel_x = (0.0, 0.3)
         self.commands.base_velocity.ranges.lin_vel_y = (0.0, 0.0)
         self.commands.base_velocity.ranges.ang_vel_z = (0.0, 0.0)
+        self.curriculum.episode_change_1 = CurriculumTermCfg(
+            func=mdp.modify_env_param,
+            params={
+                "address": "cfg.episode_length_s",
+                "modify_fn": mdp.increase_episode_length_gradually,
+                "modify_params": {
+                    "initial_length": 0.5,   # Starting episode length
+                    "final_length": 15.0,    # Final episode length
+                    "start_steps": 100,    # Start increasing at step 100
+                    "end_steps": 6000      # Finish increasing at step 6000
+                }
+            }
+        )
 
 
 @configclass
@@ -73,10 +92,14 @@ class NaoEnvCfg4(NaoEnvCfg):
             },
         )
         self.curriculum.episode_change_1 = CurriculumTermCfg(
-            func=mdp.change_episode_length_s,
+            func=mdp.modify_env_param,
             params={
-                "new_length": 8.0,
-                "num_steps": 12000,
+                "address": "cfg.episode_length_s",
+                "modify_fn": mdp.change_episode_length_s,
+                "modify_params": {
+                    "new_length": 8.0,
+                    "num_steps": 12000
+                }
             }
         )
 
@@ -98,17 +121,25 @@ class NaoEnvCfg5(NaoEnvCfg):
         self.rewards.track_ang_vel_z_exp.weight = 3.0
         self.rewards.feet_air_time_height.weight = 0.0
         self.curriculum.episode_change_1 = CurriculumTermCfg(
-            func=mdp.change_episode_length_s,
+            func=mdp.modify_env_param,
             params={
-                "new_length": 6.0,
-                "num_steps": 8000,
+                "address": "cfg.episode_length_s",
+                "modify_fn": mdp.change_episode_length_s,
+                "modify_params": {
+                    "new_length": 6.0,
+                    "num_steps": 8000
+                }
             }
         )
         self.curriculum.episode_change_2 = CurriculumTermCfg(
-            func=mdp.change_episode_length_s,
+            func=mdp.modify_env_param,
             params={
-                "new_length": 12.0,
-                "num_steps": 20000,
+                "address": "cfg.episode_length_s",
+                "modify_fn": mdp.change_episode_length_s,
+                "modify_params": {
+                    "new_length": 12.0,
+                    "num_steps": 20000
+                }
             }
         )
         
@@ -148,10 +179,14 @@ class NaoEnvCfg6(NaoEnvCfg):
             }
         )
         self.curriculum.episode_change_1 = CurriculumTermCfg(
-            func=mdp.change_episode_length_s,
+            func=mdp.modify_env_param,
             params={
-                "new_length": 6.0,
-                "num_steps": 8000,
+                "address": "cfg.episode_length_s",
+                "modify_fn": mdp.change_episode_length_s,
+                "modify_params": {
+                    "new_length": 6.0,
+                    "num_steps": 8000
+                }
             }
         )
         self.curriculum.command_change_2 = CurriculumTermCfg(
@@ -181,10 +216,14 @@ class NaoEnvCfg6(NaoEnvCfg):
             }
         )
         self.curriculum.episode_change_2 = CurriculumTermCfg(
-            func=mdp.change_episode_length_s,
+            func=mdp.modify_env_param,
             params={
-                "new_length": 8.0,
-                "num_steps": 20000,
+                "address": "cfg.episode_length_s",
+                "modify_fn": mdp.change_episode_length_s,
+                "modify_params": {
+                    "new_length": 8.0,
+                    "num_steps": 20000
+                }
             }
         )
         self.curriculum.reward_change_2 = CurriculumTermCfg(
@@ -213,10 +252,14 @@ class NaoEnvCfg6(NaoEnvCfg):
             }
         )
         self.curriculum.episode_change_3 = CurriculumTermCfg(
-            func=mdp.change_episode_length_s,
+            func=mdp.modify_env_param,
             params={
-                "new_length": 10.0,
-                "num_steps": 30000,
+                "address": "cfg.episode_length_s",
+                "modify_fn": mdp.change_episode_length_s,
+                "modify_params": {
+                    "new_length": 10.0,
+                    "num_steps": 30000
+                }
             }
         )
         self.curriculum.reward_change_4 = CurriculumTermCfg(
