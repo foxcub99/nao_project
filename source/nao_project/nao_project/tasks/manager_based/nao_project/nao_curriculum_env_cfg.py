@@ -41,9 +41,9 @@ class NaoCurriculumEnvCfg(NaoEnvCfg):
     def __post_init__(self):
         """Since we want NaoSpecificEnvCfg post init to run as the initial values for curriculum"""
         super().__post_init__()
-        self.commands.base_velocity.ranges.lin_vel_x = (0.0, 0.6)
-        self.commands.base_velocity.ranges.lin_vel_y = (0.0, 0.0)
-        self.commands.base_velocity.ranges.ang_vel_z = (0.0, 0.0)
+        self.commands.base_velocity.ranges.lin_vel_x = (-0.2, 0.8)
+        self.commands.base_velocity.ranges.lin_vel_y = (-0.2, 0.2)
+        self.commands.base_velocity.ranges.ang_vel_z = (-1.0, 1.0)
         self.rewards.track_lin_vel_xy_exp.weight = 3.0
         self.rewards.track_ang_vel_z_exp.weight = 3.0
         self.rewards.termination_penalty.weight = -0.3
