@@ -43,11 +43,11 @@ class NaoEnvCfg3(NaoEnvCfg):
         
 @configclass
 class NaoEnvCfg4(NaoEnvCfg):
+    @configclass
     class CurriculumCfg:
-        def __init__(self):
-            reward_change_1 = None
-            reward_change_2 = None
-            episode_change_1 = None
+        reward_change_1 = None
+        reward_change_2 = None
+        episode_change_1 = None
     curriculum: CurriculumCfg = CurriculumCfg()
     def __post_init__(self):
         super().__post_init__()
@@ -84,10 +84,10 @@ class NaoEnvCfg4(NaoEnvCfg):
 
 @configclass
 class NaoEnvCfg5(NaoEnvCfg):
+    @configclass
     class CurriculumCfg:
-        def __init__(self):
-            episode_change_1 = None
-            episode_change_2 = None
+        episode_change_1 = None
+        episode_change_2 = None
     curriculum: CurriculumCfg = CurriculumCfg()
     def __post_init__(self):
         super().__post_init__()
@@ -117,19 +117,19 @@ class NaoEnvCfg5(NaoEnvCfg):
         
 @configclass
 class NaoEnvCfg6(NaoEnvCfg):
+    @configclass
     class CurriculumCfg:
-        def __init__(self):
-            command_change_1 = None
-            command_change_2 = None
-            command_change_3 = None
-            command_change_4 = None
-            episode_change_1 = None
-            episode_change_2 = None
-            episode_change_3 = None
-            reward_change_1 = None
-            reward_change_2 = None
-            reward_change_3 = None
-            reward_change_4 = None
+        command_change_1 = None
+        command_change_2 = None
+        command_change_3 = None
+        command_change_4 = None
+        episode_change_1 = None
+        episode_change_2 = None
+        episode_change_3 = None
+        reward_change_1 = None
+        reward_change_2 = None
+        reward_change_3 = None
+        reward_change_4 = None
     curriculum: CurriculumCfg = CurriculumCfg()
     def __post_init__(self):
         super().__post_init__()
