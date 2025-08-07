@@ -335,7 +335,7 @@ class LocomotionVelocityEnvCfg(ManagerBasedRLEnvCfg):
         """Post initialization."""
         # general settings
         self.decimation = 3
-        self.episode_length_s = 5.0
+        self.episode_length_s = 3.0
         # simulation settings
         self.sim.dt = 0.004 # TODO match this with nao
         # self.sim.dt = 0.004  # 4ms timestep for 250Hz physics (3x faster than 83Hz robot)~

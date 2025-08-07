@@ -172,12 +172,15 @@ class NaoEnvCfg6(NaoEnvCfg):
         self.curriculum.command_change_1 = CurriculumTermCfg(
             func=mdp.modify_term_cfg,
             params={
-                "address": "commands.base_velocity",
-                "term_name": "ranges.lin_vel_x",
-                "value": (-0.2, 0.3),
-                "num_steps": 8000,
+                "address": "commands.base_velocity.ranges.lin_vel_x",
+                "modify_fn": mdp.change_command_ranges,
+                "modify_params": {
+                    "value": (-0.2, 0.3),
+                    "num_steps": 8000,
+                }
             }
         )
+
         self.curriculum.episode_change_1 = CurriculumTermCfg(
             func=mdp.modify_env_param,
             params={
@@ -192,10 +195,12 @@ class NaoEnvCfg6(NaoEnvCfg):
         self.curriculum.command_change_2 = CurriculumTermCfg(
             func=mdp.modify_term_cfg,
             params={
-                "address": "commands.base_velocity",
-                "term_name": "ranges.lin_vel_y",
-                "value": (-0.1, 0.1),
-                "num_steps": 12000,
+                "address": "commands.base_velocity.ranges.lin_vel_y",
+                "modify_fn": mdp.change_command_ranges,
+                "modify_params": {
+                    "value": (-0.1, 0.1),
+                    "num_steps": 12000,
+                }
             }
         )
         self.curriculum.reward_change_1 = CurriculumTermCfg(
@@ -209,10 +214,12 @@ class NaoEnvCfg6(NaoEnvCfg):
         self.curriculum.command_change_3 = CurriculumTermCfg(
             func=mdp.modify_term_cfg,
             params={
-                "address": "commands.base_velocity",
-                "term_name": "ranges.ang_vel_z",
-                "value": (-1.0, 1.0),
-                "num_steps": 20000,
+                "address": "commands.base_velocity.ranges.ang_vel_z",
+                "modify_fn": mdp.change_command_ranges,
+                "modify_params": {
+                    "value": (-1.0, 1.0),
+                    "num_steps": 20000,
+                }
             }
         )
         self.curriculum.episode_change_2 = CurriculumTermCfg(
@@ -245,10 +252,12 @@ class NaoEnvCfg6(NaoEnvCfg):
         self.curriculum.command_change_4 = CurriculumTermCfg(
             func=mdp.modify_term_cfg,
             params={
-                "address": "commands.base_velocity",
-                "term_name": "ranges.lin_vel_x",
-                "value": (-0.3, 0.6),
-                "num_steps": 30000,
+                "address": "commands.base_velocity.ranges.lin_vel_x",
+                "modify_fn": mdp.change_command_ranges,
+                "modify_params": {
+                    "value": (-0.3, 0.6),
+                    "num_steps": 30000,
+                }
             }
         )
         self.curriculum.episode_change_3 = CurriculumTermCfg(

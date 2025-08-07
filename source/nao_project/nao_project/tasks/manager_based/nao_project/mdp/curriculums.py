@@ -331,6 +331,14 @@ class modify_term_cfg(modify_env_param):
         self._address = self._address.replace("s.", "_manager.cfg.", 1)
 
 
+def change_command_ranges(
+    env: ManagerBasedRLEnv, env_ids: torch.Tensor, old_value: Dict[str, Any],
+    value: Dict[str, tuple[float, float]], num_steps: int, **kwargs
+) -> Dict[str, tuple[float, float]]:
+    if env.common_step_counter > num_steps:
+        return value
+    return old_value
+
 def change_episode_length_s(
     env: ManagerBasedRLEnv, env_ids: torch.Tensor, old_value: float, 
     new_length: float, num_steps: int, **kwargs
