@@ -88,6 +88,7 @@ class NaoEnvCfg5(NaoEnvCfg):
         def __init__(self):
             self.episode_change_1 = None
             self.episode_change_2 = None
+    curriculum: CurriculumCfg = CurriculumCfg()
     def __post_init__(self):
         super().__post_init__()
         self.commands.base_velocity.ranges.lin_vel_x = (-0.3, 0.6)
@@ -129,7 +130,7 @@ class NaoEnvCfg6(NaoEnvCfg):
             self.reward_change_2 = None
             self.reward_change_3 = None
             self.reward_change_4 = None
-
+    curriculum: CurriculumCfg = CurriculumCfg()
     def __post_init__(self):
         super().__post_init__()
         self.commands.base_velocity.ranges.lin_vel_x = (0.0, 0.3)
