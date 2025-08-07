@@ -6,6 +6,7 @@
 from isaaclab.managers import SceneEntityCfg
 from isaaclab.utils import configclass
 from isaaclab.managers import CurriculumTermCfg
+from isaaclab.managers import EventTermCfg
 
 from . import mdp
 from .nao_env_cfg import NaoEnvCfg
@@ -14,8 +15,8 @@ from .nao_env_cfg import NaoEnvCfg
 class NaoEnvCfg1(NaoEnvCfg):
     @configclass
     class CurriculumCfg:
-        reward_change_1 = None
-        reward_change_2 = None
+        event_change_1 = None
+        event_change_2 = None
         episode_change_1 = None
     curriculum: CurriculumCfg = CurriculumCfg()
     def __post_init__(self):
@@ -25,8 +26,18 @@ class NaoEnvCfg1(NaoEnvCfg):
         self.commands.base_velocity.ranges.ang_vel_z = (0.0, 0.0)
         self.rewards.track_lin_vel_xy_exp.weight = 3.0
         self.rewards.track_ang_vel_z_exp.weight = 3.0
-        self.rewards.termination_penalty.weight = -0.1
-        self.rewards.feet_air_time_height.weight = 0.0
+        self.rewards.termination_penalty.weight = -1.0
+        self.physics_material = EventTermCfg(
+        func=mdp.randomize_rigid_body_material,
+            mode="startup",
+            params={
+                "asset_cfg": SceneEntityCfg("robot", body_names=".*"),
+                "static_friction_range": (0.0, 1.0),
+                "dynamic_friction_range": (0.4, 0.8),
+                "restitution_range": (0.0, 1.0),
+                "num_buckets": 64,
+            },
+        )
         self.curriculum.episode_change_1 = CurriculumTermCfg(
             func=mdp.modify_env_param,
             params={
@@ -46,8 +57,6 @@ class NaoEnvCfg1(NaoEnvCfg):
 class NaoEnvCfg2(NaoEnvCfg):
     @configclass
     class CurriculumCfg:
-        reward_change_1 = None
-        reward_change_2 = None
         episode_change_1 = None
     curriculum: CurriculumCfg = CurriculumCfg()
     def __post_init__(self):
@@ -57,8 +66,16 @@ class NaoEnvCfg2(NaoEnvCfg):
         self.commands.base_velocity.ranges.ang_vel_z = (0.0, 0.0)
         self.rewards.track_lin_vel_xy_exp.weight = 3.0
         self.rewards.track_ang_vel_z_exp.weight = 3.0
-        self.rewards.termination_penalty.weight = -0.2
-        self.rewards.feet_air_time_height.weight = 0.0
+        self.rewards.termination_penalty.weight = -1.0
+        self.add_base_mass = EventTermCfg(
+        func=mdp.randomize_rigid_body_mass,
+            mode="startup",
+            params={
+                "asset_cfg": SceneEntityCfg("robot", body_names="base_link"),
+                "mass_distribution_params": (-2.0, 2.0),
+                "operation": "add",
+            },
+        )
         self.curriculum.episode_change_1 = CurriculumTermCfg(
             func=mdp.modify_env_param,
             params={
@@ -72,44 +89,32 @@ class NaoEnvCfg2(NaoEnvCfg):
                 }
             }
         )
-        self.curriculum.reward_change_1 = CurriculumTermCfg(
-            func=mdp.modify_reward_weight,
-            params={
-                "term_name": "track_lin_vel_xy_exp",
-                "weight": 6.0,
-                "num_steps": 20000,
-            },
-        )
-        self.curriculum.reward_change_2 = CurriculumTermCfg(
-            func=mdp.modify_reward_weight,
-            params={
-                "term_name": "termination_penalty",
-                "weight": -0.05,
-                "num_steps": 26000,
-            },
-        )
-
         
 @configclass
 class NaoEnvCfg3(NaoEnvCfg):
     @configclass
     class CurriculumCfg:
-        reward_change_1 = None
-        reward_change_2 = None
+        event_change_1 = None
+        event_change_2 = None
         episode_change_1 = None
-        command_change_1 = None
-        command_change_2 = None
-        command_change_3 = None
     curriculum: CurriculumCfg = CurriculumCfg()
     def __post_init__(self):
         super().__post_init__()
-        self.commands.base_velocity.ranges.lin_vel_x = (-0.15, 0.2)
-        self.commands.base_velocity.ranges.lin_vel_y = (-0.1, 0.1)
-        self.commands.base_velocity.ranges.ang_vel_z = (-0.5, 0.5)
+        self.commands.base_velocity.ranges.lin_vel_x = (0.0, 1.0)
+        self.commands.base_velocity.ranges.lin_vel_y = (0.0, 0.0)
+        self.commands.base_velocity.ranges.ang_vel_z = (0.0, 0.0)
         self.rewards.track_lin_vel_xy_exp.weight = 3.0
         self.rewards.track_ang_vel_z_exp.weight = 3.0
-        self.rewards.termination_penalty.weight = -0.1
-        self.rewards.feet_air_time_height.weight = 0.0
+        self.rewards.termination_penalty.weight = -1.0
+        self.base_external_force_torque = EventTermCfg(
+            func=mdp.apply_external_force_torque,
+            mode="reset",
+            params={
+                "asset_cfg": SceneEntityCfg("robot", body_names="base_link"),
+                "force_range": (-5.0, 5.0),
+                "torque_range": (-1.0, 1.0),
+            },
+        )
         self.curriculum.episode_change_1 = CurriculumTermCfg(
             func=mdp.modify_env_param,
             params={
@@ -120,56 +125,6 @@ class NaoEnvCfg3(NaoEnvCfg):
                     "final_length": 15.0,    # Final episode length
                     "start_steps": 2000,    # Start increasing at step 2000
                     "end_steps": 32000      # Finish increasing at step 32000
-                }
-            }
-        )
-        # Stage 2
-        self.curriculum.reward_change_1 = CurriculumTermCfg(
-            func=mdp.modify_reward_weight,
-            params={
-                "term_name": "track_lin_vel_xy_exp",
-                "weight": 6.0,
-                "num_steps": 36000,
-            },
-        )
-        self.curriculum.reward_change_2 = CurriculumTermCfg(
-            func=mdp.modify_reward_weight,
-            params={
-                "term_name": "track_ang_vel_z_exp",
-                "weight": 6.0,
-                "num_steps": 36000,
-            },
-        )
-        self.curriculum.command_change_1 = CurriculumTermCfg(
-            func=mdp.modify_term_cfg,
-            params={
-                "address": "commands.base_velocity.ranges.lin_vel_x",
-                "modify_fn": mdp.change_command_ranges,
-                "modify_params": {
-                    "value": (-0.3, 0.4),
-                    "num_steps": 36000,
-                }
-            }
-        )
-        self.curriculum.command_change_2 = CurriculumTermCfg(
-            func=mdp.modify_term_cfg,
-            params={
-                "address": "commands.base_velocity.ranges.lin_vel_y",
-                "modify_fn": mdp.change_command_ranges,
-                "modify_params": {
-                    "value": (-0.3, 0.3),
-                    "num_steps": 36000,
-                }
-            }
-        )
-        self.curriculum.command_change_3 = CurriculumTermCfg(
-            func=mdp.modify_term_cfg,
-            params={
-                "address": "commands.base_velocity.ranges.ang_vel_z",
-                "modify_fn": mdp.change_command_ranges,
-                "modify_params": {
-                    "value": (-1.0, 1.0),
-                    "num_steps": 36000,
                 }
             }
         )
@@ -182,8 +137,8 @@ class NaoEnvCfg3(NaoEnvCfg):
 class NaoEnvCfg4(NaoEnvCfg):
     @configclass
     class CurriculumCfg:
-        reward_change_1 = None
-        reward_change_2 = None
+        event_change_1 = None
+        event_change_2 = None
         episode_change_1 = None
     curriculum: CurriculumCfg = CurriculumCfg()
     def __post_init__(self):
@@ -191,10 +146,18 @@ class NaoEnvCfg4(NaoEnvCfg):
         self.commands.base_velocity.ranges.lin_vel_x = (0.0, 1.0)
         self.commands.base_velocity.ranges.lin_vel_y = (0.0, 0.0)
         self.commands.base_velocity.ranges.ang_vel_z = (0.0, 0.0)
-        self.rewards.track_lin_vel_xy_exp.weight = 5.0
-        self.rewards.track_ang_vel_z_exp.weight = 5.0
-        self.rewards.termination_penalty.weight = -0.1
-        # Stage1
+        self.rewards.track_lin_vel_xy_exp.weight = 3.0
+        self.rewards.track_ang_vel_z_exp.weight = 3.0
+        self.rewards.termination_penalty.weight = -1.0
+        self.base_external_force_torque = EventTermCfg(
+            func=mdp.apply_external_force_torque,
+            mode="reset",
+            params={
+                "asset_cfg": SceneEntityCfg("robot", body_names="base_link"),
+                "force_range": (-10.0, 10.0),
+                "torque_range": (-10.0, 10.0),
+            },
+        )
         self.curriculum.episode_change_1 = CurriculumTermCfg(
             func=mdp.modify_env_param,
             params={
@@ -202,9 +165,9 @@ class NaoEnvCfg4(NaoEnvCfg):
                 "modify_fn": mdp.increase_episode_length_gradually,
                 "modify_params": {
                     "initial_length": 3.0,   # Starting episode length
-                    "final_length": 20.0,    # Final episode length
+                    "final_length": 15.0,    # Final episode length
                     "start_steps": 2000,    # Start increasing at step 2000
-                    "end_steps": 72000      # Finish increasing at step 72000
+                    "end_steps": 32000      # Finish increasing at step 32000
                 }
             }
         )
@@ -215,8 +178,8 @@ class NaoEnvCfg4(NaoEnvCfg):
 class NaoEnvCfg5(NaoEnvCfg):
     @configclass
     class CurriculumCfg:
-        reward_change_1 = None
-        reward_change_2 = None
+        event_change_1 = None
+        event_change_2 = None
         episode_change_1 = None
     curriculum: CurriculumCfg = CurriculumCfg()
     def __post_init__(self):
@@ -226,8 +189,15 @@ class NaoEnvCfg5(NaoEnvCfg):
         self.commands.base_velocity.ranges.ang_vel_z = (0.0, 0.0)
         self.rewards.track_lin_vel_xy_exp.weight = 3.0
         self.rewards.track_ang_vel_z_exp.weight = 3.0
-        self.rewards.termination_penalty.weight = -0.1
-        self.rewards.feet_air_time_height.weight = 0.0
+        self.rewards.termination_penalty.weight = -1.0
+        self.reset_robot_joints = EventTermCfg(
+            func=mdp.reset_joints_by_scale,
+            mode="reset",
+            params={
+                "position_range": (-0.7, 0.7),
+                "velocity_range": (-0.2, 0.2),
+            },
+        )
         self.curriculum.episode_change_1 = CurriculumTermCfg(
             func=mdp.modify_env_param,
             params={
@@ -246,132 +216,34 @@ class NaoEnvCfg5(NaoEnvCfg):
 class NaoEnvCfg6(NaoEnvCfg):
     @configclass
     class CurriculumCfg:
-        command_change_1 = None
-        command_change_2 = None
-        command_change_3 = None
-        command_change_4 = None
+        event_change_1 = None
+        event_change_2 = None
         episode_change_1 = None
-        episode_change_2 = None
-        episode_change_3 = None
-        reward_change_1 = None
-        reward_change_2 = None
-        reward_change_3 = None
-        reward_change_4 = None
     curriculum: CurriculumCfg = CurriculumCfg()
     def __post_init__(self):
         super().__post_init__()
-        self.commands.base_velocity.ranges.lin_vel_x = (0.0, 0.3)
+        self.commands.base_velocity.ranges.lin_vel_x = (0.0, 1.0)
         self.commands.base_velocity.ranges.lin_vel_y = (0.0, 0.0)
         self.commands.base_velocity.ranges.ang_vel_z = (0.0, 0.0)
-        self.rewards.termination_penalty.weight = -0.1
-        # Stage
-        self.curriculum.command_change_1 = CurriculumTermCfg(
-            func=mdp.modify_term_cfg,
-            params={
-                "address": "commands.base_velocity.ranges.lin_vel_x",
-                "modify_fn": mdp.change_command_ranges,
-                "modify_params": {
-                    "value": (-0.2, 0.3),
-                    "num_steps": 8000,
-                }
-            }
+        self.rewards.track_lin_vel_xy_exp.weight = 3.0
+        self.rewards.track_ang_vel_z_exp.weight = 3.0
+        self.rewards.termination_penalty.weight = -1.0
+        self.push_robot = EventTermCfg(
+            func=mdp.push_by_setting_velocity,
+            mode="interval",
+            interval_range_s=(5.0, 15.0),
+            params={"velocity_range": {"x": (-0.1, 0.15), "y": (-0.1, 0.1), "z": (-0.5, 0.5)}},
         )
-
         self.curriculum.episode_change_1 = CurriculumTermCfg(
             func=mdp.modify_env_param,
             params={
                 "address": "cfg.episode_length_s",
-                "modify_fn": mdp.change_episode_length_s,
+                "modify_fn": mdp.increase_episode_length_gradually,
                 "modify_params": {
-                    "new_length": 6.0,
-                    "num_steps": 8000
+                    "initial_length": 3.0,   # Starting episode length
+                    "final_length": 15.0,    # Final episode length
+                    "start_steps": 2000,    # Start increasing at step 2000
+                    "end_steps": 32000      # Finish increasing at step 32000
                 }
             }
-        )
-        self.curriculum.command_change_2 = CurriculumTermCfg(
-            func=mdp.modify_term_cfg,
-            params={
-                "address": "commands.base_velocity.ranges.lin_vel_y",
-                "modify_fn": mdp.change_command_ranges,
-                "modify_params": {
-                    "value": (-0.1, 0.1),
-                    "num_steps": 12000,
-                }
-            }
-        )
-        self.curriculum.reward_change_1 = CurriculumTermCfg(
-            func=mdp.modify_reward_weight,
-            params={
-                "term_name": "track_lin_vel_xy_exp",
-                "weight": 2.0,
-                "num_steps": 16000,
-            },
-        )
-        self.curriculum.command_change_3 = CurriculumTermCfg(
-            func=mdp.modify_term_cfg,
-            params={
-                "address": "commands.base_velocity.ranges.ang_vel_z",
-                "modify_fn": mdp.change_command_ranges,
-                "modify_params": {
-                    "value": (-1.0, 1.0),
-                    "num_steps": 20000,
-                }
-            }
-        )
-        self.curriculum.episode_change_2 = CurriculumTermCfg(
-            func=mdp.modify_env_param,
-            params={
-                "address": "cfg.episode_length_s",
-                "modify_fn": mdp.change_episode_length_s,
-                "modify_params": {
-                    "new_length": 8.0,
-                    "num_steps": 20000
-                }
-            }
-        )
-        self.curriculum.reward_change_2 = CurriculumTermCfg(
-            func=mdp.modify_reward_weight,
-            params={
-                "term_name": "track_ang_vel_z_exp",
-                "weight": 2.0,
-                "num_steps": 24000,
-            },
-        )
-        self.curriculum.reward_change_3 = CurriculumTermCfg(
-            func=mdp.modify_reward_weight,
-            params={
-                "term_name": "feet_air_time_height",
-                "weight": 0.0,
-                "num_steps": 28000,
-            },
-        )
-        self.curriculum.command_change_4 = CurriculumTermCfg(
-            func=mdp.modify_term_cfg,
-            params={
-                "address": "commands.base_velocity.ranges.lin_vel_x",
-                "modify_fn": mdp.change_command_ranges,
-                "modify_params": {
-                    "value": (-0.3, 0.6),
-                    "num_steps": 30000,
-                }
-            }
-        )
-        self.curriculum.episode_change_3 = CurriculumTermCfg(
-            func=mdp.modify_env_param,
-            params={
-                "address": "cfg.episode_length_s",
-                "modify_fn": mdp.change_episode_length_s,
-                "modify_params": {
-                    "new_length": 10.0,
-                    "num_steps": 30000
-                }
-            }
-        )
-        self.curriculum.reward_change_4 = CurriculumTermCfg(
-            func=mdp.modify_reward_weight,
-            params={
-                "term_name": "track_lin_vel_xy_exp",
-                "weight": 3.0,
-                "num_steps": 32000,
-            },
         )
