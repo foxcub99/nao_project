@@ -59,6 +59,12 @@ class MySceneCfg(InteractiveSceneCfg):
             history_length=1,
             track_air_time=True,
         )
+    illegal_contact_forces = ContactSensorCfg(
+            prim_path=MISSING,
+            filter_prim_paths_expr=MISSING,
+            history_length=1,
+            track_air_time=False,
+        )
 
     sky_light = AssetBaseCfg(
         prim_path="/World/skyLight",
@@ -293,6 +299,15 @@ class RewardsCfg:
                     ".*Thumb.*",
                 ],
             )
+        },
+    )
+    # -- Contact forces
+    feet_self_contact = RewardTermCfg(
+        func=mdp.undesired_contacts_filtered,
+        weight=-0.1,
+        params={
+            "sensor_cfg": SceneEntityCfg("illegal_contact_forces", body_names=[".*_ankle"]),
+            "threshold": 0.1,  # Penalize if contact force exceeds 0.1 N
         },
     )
 

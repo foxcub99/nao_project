@@ -230,3 +230,37 @@ def track_ang_vel_z_world_exp(
     return torch.exp(-ang_vel_error / std**2)
 
 
+def undesired_contacts_filtered(env: ManagerBasedRLEnv, threshold: float, sensor_cfg: SceneEntityCfg) -> torch.Tensor:
+    """Penalize undesired contacts as the number of violations that are above a threshold."""
+    # extract the used quantities (to enable type-hinting)
+    contact_sensor: ContactSensor = env.scene.sensors[sensor_cfg.name]
+    # check if contact force is above threshold using filtered contact forces
+    
+    # Try to use force_matrix_w_history first (with history), fallback to force_matrix_w
+    filtered_contact_forces = getattr(contact_sensor.data, 'force_matrix_w_history', None)
+    if filtered_contact_forces is not None:
+        # force_matrix_w_history shape: (N, T, B, M, 3) where T=history_length, M=filtered_bodies
+        # Sum over all filtered bodies (M dimension) to get total force per sensor body
+        total_forces_per_body = torch.sum(filtered_contact_forces, dim=3)  # Shape: (N, T, B, 3)
+        # Select specific sensor bodies, following the same pattern as feet_slide function
+        selected_forces = total_forces_per_body[:, :, sensor_cfg.body_ids, :]  # Shape: (N, T, len(body_ids), 3)
+        # Take max over history and compute contact threshold
+        is_contact = torch.max(torch.norm(selected_forces, dim=-1), dim=1)[0] > threshold
+    else:
+        # Fallback to force_matrix_w (current frame only)
+        filtered_contact_forces = getattr(contact_sensor.data, 'force_matrix_w', None)
+        if filtered_contact_forces is not None:
+            # force_matrix_w shape: (N, B, M, 3)
+            # Sum over all filtered bodies (M dimension) to get total force per sensor body
+            total_forces_per_body = torch.sum(filtered_contact_forces, dim=2)  # Shape: (N, B, 3)
+            # Select specific sensor bodies
+            selected_forces = total_forces_per_body[:, sensor_cfg.body_ids, :]  # Shape: (N, len(body_ids), 3)
+            is_contact = torch.norm(selected_forces, dim=-1) > threshold
+        else:
+            # Final fallback to unfiltered net forces (same pattern as original)
+            net_contact_forces = contact_sensor.data.net_forces_w_history
+            # Follow the exact same pattern as feet_slide function
+            is_contact = torch.max(torch.norm(net_contact_forces[:, :, sensor_cfg.body_ids, :], dim=-1), dim=1)[0] > threshold
+    
+    # sum over contacts for each environment
+    return torch.sum(is_contact, dim=1)

@@ -24,7 +24,12 @@ class NaoEnvCfg(LocomotionVelocityEnvCfg):
 
         # Scene
         self.scene.robot = NAO_CFG.replace(prim_path="{ENV_REGEX_NS}/Robot")
-        self.scene.contact_forces.prim_path=f"/World/envs/env_.*/Robot/NaoH25V50/.*"
+        self.scene.contact_forces.prim_path=f"/World/envs/env_.*/Robot/NaoH25V50/.*_ankle" # don't have to filter by ankle but efficient
+        self.scene.illegal_contact_forces.prim_path=f"/World/envs/env_.*/Robot/NaoH25V50/.*_ankle"
+        self.scene.illegal_contact_forces.filter_prim_paths_expr=[
+            "/World/envs/env_.*/Robot/NaoH25V50/l_ankle",
+            "/World/envs/env_.*/Robot/NaoH25V50/r_ankle"
+        ]
 
         # Commands
         self.commands.base_velocity.ranges.lin_vel_x = (0.0, 0.0)
@@ -67,7 +72,7 @@ class NaoEnvCfg(LocomotionVelocityEnvCfg):
         self.rewards.feet_slide.params["sensor_cfg"] = SceneEntityCfg(
             "contact_forces", body_names=[".*_ankle"]
         )
-        self.rewards.dof_torques_l2.weight = -2.0e-8 # originally -2.0e-6
+        self.rewards.dof_torques_l2.weight = -2.0e-6 # originally -2.0e-6
         self.rewards.dof_torques_l2.params["asset_cfg"] = SceneEntityCfg(
             "robot", joint_names=[".*Hip.*", ".*Knee.*"]
         )
@@ -90,6 +95,8 @@ class NaoEnvCfg(LocomotionVelocityEnvCfg):
         self.rewards.joint_deviation_fingers = None # I took out fingers
         self.rewards.joint_deviation_torso.weight = -0.04
         self.rewards.joint_deviation_torso.params["asset_cfg"].joint_names = [".*HipYawPitch"]
+        self.rewards.feet_self_contact.params["sensor_cfg"].body_names = [".*_ankle"]
+        self.rewards.feet_self_contact.weight = -0.1
         # -- Events
         self.events.base_external_force_torque.params["asset_cfg"].body_names = ["base_link"]
         # -- Terminations

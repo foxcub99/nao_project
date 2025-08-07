@@ -46,7 +46,7 @@ class NaoCurriculumEnvCfg(NaoEnvCfg):
         self.commands.base_velocity.ranges.ang_vel_z = (0.0, 0.0)
         self.rewards.track_lin_vel_xy_exp.weight = 3.0
         self.rewards.track_ang_vel_z_exp.weight = 3.0
-        self.rewards.termination_penalty.weight = -1.0
+        self.rewards.termination_penalty.weight = -0.3
         self.rewards.feet_air_time_height.weight = 0.0
         self.curriculum.episode_change_1 = CurriculumTermCfg(
             func=mdp.modify_env_param,
