@@ -6,6 +6,7 @@
 from isaaclab.managers import SceneEntityCfg
 from isaaclab.utils import configclass
 from isaaclab.managers import CurriculumTermCfg
+from isaaclab.managers import EventTermCfg
 
 from . import mdp
 from .nao_env_cfg import NaoEnvCfg
@@ -216,8 +217,8 @@ class NaoEnvCfg4(NaoEnvCfg):
 class NaoEnvCfg5(NaoEnvCfg):
     @configclass
     class CurriculumCfg:
-        reward_change_1 = None
-        reward_change_2 = None
+        event_change_1 = None
+        event_change_2 = None
         episode_change_1 = None
 
     curriculum: CurriculumCfg = CurriculumCfg()
@@ -229,8 +230,15 @@ class NaoEnvCfg5(NaoEnvCfg):
         self.commands.base_velocity.ranges.ang_vel_z = (0.0, 0.0)
         self.rewards.track_lin_vel_xy_exp.weight = 3.0
         self.rewards.track_ang_vel_z_exp.weight = 3.0
-        self.rewards.termination_penalty.weight = -0.1
-        self.rewards.feet_air_time_height.weight = 0.0
+        self.rewards.termination_penalty.weight = -1.0
+        self.reset_robot_joints = EventTermCfg(
+            func=mdp.reset_joints_by_scale,
+            mode="reset",
+            params={
+                "position_range": (-0.7, 0.7),
+                "velocity_range": (-0.2, 0.2),
+            },
+        )
         self.curriculum.episode_change_1 = CurriculumTermCfg(
             func=mdp.modify_env_param,
             params={
@@ -250,10 +258,8 @@ class NaoEnvCfg5(NaoEnvCfg):
 class NaoEnvCfg6(NaoEnvCfg):
     @configclass
     class CurriculumCfg:
-        command_change_1 = None
-        command_change_2 = None
-        command_change_3 = None
-        command_change_4 = None
+        event_change_1 = None
+        event_change_2 = None
         episode_change_1 = None
         episode_change_2 = None
         episode_change_3 = None
@@ -266,7 +272,7 @@ class NaoEnvCfg6(NaoEnvCfg):
 
     def __post_init__(self):
         super().__post_init__()
-        self.commands.base_velocity.ranges.lin_vel_x = (0.0, 0.3)
+        self.commands.base_velocity.ranges.lin_vel_x = (0.0, 1.0)
         self.commands.base_velocity.ranges.lin_vel_y = (0.0, 0.0)
         self.commands.base_velocity.ranges.ang_vel_z = (0.0, 0.0)
         self.rewards.termination_penalty.weight = -0.1
@@ -282,7 +288,6 @@ class NaoEnvCfg6(NaoEnvCfg):
                 },
             },
         )
-
         self.curriculum.episode_change_1 = CurriculumTermCfg(
             func=mdp.modify_env_param,
             params={
