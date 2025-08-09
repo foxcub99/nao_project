@@ -28,7 +28,7 @@ class NaoEnvCfg1(NaoEnvCfg):
         self.rewards.track_ang_vel_z_exp.weight = 3.0
         self.rewards.termination_penalty.weight = -1.0
         self.physics_material = EventTermCfg(
-        func=mdp.randomize_rigid_body_material,
+            func=mdp.randomize_rigid_body_material,
             mode="startup",
             params={
                 "asset_cfg": SceneEntityCfg("robot", body_names=".*"),
@@ -67,8 +67,8 @@ class NaoEnvCfg2(NaoEnvCfg):
         self.rewards.track_lin_vel_xy_exp.weight = 3.0
         self.rewards.track_ang_vel_z_exp.weight = 3.0
         self.rewards.termination_penalty.weight = -1.0
-        self.add_base_mass = EventTermCfg(
-        func=mdp.randomize_rigid_body_mass,
+        self.events.add_base_mass = EventTermCfg(
+            func=mdp.randomize_rigid_body_mass,
             mode="startup",
             params={
                 "asset_cfg": SceneEntityCfg("robot", body_names="base_link"),
@@ -106,7 +106,7 @@ class NaoEnvCfg3(NaoEnvCfg):
         self.rewards.track_lin_vel_xy_exp.weight = 3.0
         self.rewards.track_ang_vel_z_exp.weight = 3.0
         self.rewards.termination_penalty.weight = -1.0
-        self.base_external_force_torque = EventTermCfg(
+        self.events.base_external_force_torque = EventTermCfg(
             func=mdp.apply_external_force_torque,
             mode="reset",
             params={
@@ -149,7 +149,7 @@ class NaoEnvCfg4(NaoEnvCfg):
         self.rewards.track_lin_vel_xy_exp.weight = 3.0
         self.rewards.track_ang_vel_z_exp.weight = 3.0
         self.rewards.termination_penalty.weight = -1.0
-        self.base_external_force_torque = EventTermCfg(
+        self.events.base_external_force_torque = EventTermCfg(
             func=mdp.apply_external_force_torque,
             mode="reset",
             params={
@@ -190,7 +190,7 @@ class NaoEnvCfg5(NaoEnvCfg):
         self.rewards.track_lin_vel_xy_exp.weight = 3.0
         self.rewards.track_ang_vel_z_exp.weight = 3.0
         self.rewards.termination_penalty.weight = -1.0
-        self.reset_robot_joints = EventTermCfg(
+        self.events.reset_robot_joints = EventTermCfg(
             func=mdp.reset_joints_by_scale,
             mode="reset",
             params={
@@ -228,7 +228,7 @@ class NaoEnvCfg6(NaoEnvCfg):
         self.rewards.track_lin_vel_xy_exp.weight = 3.0
         self.rewards.track_ang_vel_z_exp.weight = 3.0
         self.rewards.termination_penalty.weight = -1.0
-        self.push_robot = EventTermCfg(
+        self.events.push_robot = EventTermCfg(
             func=mdp.push_by_setting_velocity,
             mode="interval",
             interval_range_s=(5.0, 15.0),
