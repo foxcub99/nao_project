@@ -231,7 +231,7 @@ class NaoEnvCfg5(NaoEnvCfg):
         self.rewards.track_lin_vel_xy_exp.weight = 3.0
         self.rewards.track_ang_vel_z_exp.weight = 3.0
         self.rewards.termination_penalty.weight = -1.0
-        self.reset_robot_joints = EventTermCfg(
+        self.events.reset_robot_joints = EventTermCfg(
             func=mdp.reset_joints_by_scale,
             mode="reset",
             params={
