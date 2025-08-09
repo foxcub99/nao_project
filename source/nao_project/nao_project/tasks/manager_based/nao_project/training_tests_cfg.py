@@ -27,7 +27,7 @@ class NaoEnvCfg1(NaoEnvCfg):
         self.rewards.track_lin_vel_xy_exp.weight = 3.0
         self.rewards.track_ang_vel_z_exp.weight = 3.0
         self.rewards.termination_penalty.weight = -1.0
-        self.physics_material = EventTermCfg(
+        self.events.physics_material = EventTermCfg(
             func=mdp.randomize_rigid_body_material,
             mode="startup",
             params={
