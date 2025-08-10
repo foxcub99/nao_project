@@ -143,9 +143,9 @@ class NaoIsaacNode(Node):
     def fsr_callback(self, msg):
         """Handle Force Sensitive Resistor (FSR) updates for foot contact."""
         left_foot_force = sum([msg.l_foot_front_left, msg.l_foot_front_right, 
-                              msg.l_foot_rear_left, msg.l_foot_rear_right])
+                              msg.l_foot_back_left, msg.l_foot_back_right])
         right_foot_force = sum([msg.r_foot_front_left, msg.r_foot_front_right, 
-                               msg.r_foot_rear_left, msg.r_foot_rear_right])
+                               msg.r_foot_back_left, msg.r_foot_back_right])
         
         self.fsr_history[0].append(left_foot_force)
         self.fsr_history[1].append(right_foot_force)
