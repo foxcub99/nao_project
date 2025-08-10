@@ -16,50 +16,8 @@ from .nao_env_cfg import NaoEnvCfg
 class NaoEnvCfg1(NaoEnvCfg):
     # @configclass
     # class CurriculumCfg:
-    #     reward_change_1 = None
-    #     reward_change_2 = None
-    #     episode_change_1 = None
-    # curriculum: CurriculumCfg = CurriculumCfg()
-    def __post_init__(self):
-        super().__post_init__()
-        self.commands.base_velocity.ranges.lin_vel_x = (0.0, 1.0)
-        self.commands.base_velocity.ranges.lin_vel_y = (0.0, 0.0)
-        self.commands.base_velocity.ranges.ang_vel_z = (0.0, 0.0)
-        self.rewards.track_lin_vel_xy_exp.weight = 3.0
-        self.rewards.track_ang_vel_z_exp.weight = 3.0
-        self.rewards.termination_penalty.weight = -1.0
-        self.events.physics_material = EventTermCfg(
-            func=mdp.randomize_rigid_body_material,
-            mode="startup",
-            params={
-                "asset_cfg": SceneEntityCfg("robot", body_names=".*"),
-                "static_friction_range": (0.0, 1.0),
-                "dynamic_friction_range": (0.4, 0.8),
-                "restitution_range": (0.0, 1.0),
-                "num_buckets": 64,
-            },
-        )
-        self.curriculum.episode_change_1 = CurriculumTermCfg(
-            func=mdp.modify_env_param,
-            params={
-                "address": "cfg.episode_length_s",
-                "modify_fn": mdp.increase_episode_length_gradually,
-                "modify_params": {
-                    "initial_length": 3.0,   # Starting episode length
-                    "final_length": 15.0,    # Final episode length
-                    "start_steps": 2000,    # Start increasing at step 2000
-                    "end_steps": 32000      # Finish increasing at step 32000
-                }
-            }
-        )
-
-
-@configclass
-class NaoEnvCfg2(NaoEnvCfg):
-    # @configclass
-    # class CurriculumCfg:
-    #     reward_change_1 = None
-    #     reward_change_2 = None
+    #     event_change_1 = None
+    #     event_change_2 = None
     #     episode_change_1 = None
     # curriculum: CurriculumCfg = CurriculumCfg()
     def __post_init__(self):
@@ -69,8 +27,18 @@ class NaoEnvCfg2(NaoEnvCfg):
         # self.commands.base_velocity.ranges.ang_vel_z = (0.0, 0.0)
         # self.rewards.track_lin_vel_xy_exp.weight = 3.0
         # self.rewards.track_ang_vel_z_exp.weight = 3.0
-        # self.rewards.termination_penalty.weight = -0.2
-        # self.rewards.feet_air_time_height.weight = 0.0
+        # self.rewards.termination_penalty.weight = -1.0
+        # self.events.physics_material = EventTermCfg(
+        #     func=mdp.randomize_rigid_body_material,
+        #     mode="startup",
+        #     params={
+        #         "asset_cfg": SceneEntityCfg("robot", body_names=".*"),
+        #         "static_friction_range": (0.0, 1.0),
+        #         "dynamic_friction_range": (0.4, 0.8),
+        #         "restitution_range": (0.0, 1.0),
+        #         "num_buckets": 64,
+        #     },
+        # )
         # self.curriculum.episode_change_1 = CurriculumTermCfg(
         #     func=mdp.modify_env_param,
         #     params={
@@ -84,24 +52,45 @@ class NaoEnvCfg2(NaoEnvCfg):
         #         }
         #     }
         # )
-        # self.curriculum.reward_change_1 = CurriculumTermCfg(
-        #     func=mdp.modify_reward_weight,
-        #     params={
-        #         "term_name": "track_lin_vel_xy_exp",
-        #         "weight": 6.0,
-        #         "num_steps": 20000,
-        #     },
-        # )
-        # self.curriculum.reward_change_2 = CurriculumTermCfg(
-        #     func=mdp.modify_reward_weight,
-        #     params={
-        #         "term_name": "termination_penalty",
-        #         "weight": -0.05,
-        #         "num_steps": 26000,
-        #     },
-        # )
 
 
+@configclass
+class NaoEnvCfg2(NaoEnvCfg):
+    # @configclass
+    # class CurriculumCfg:
+    #     episode_change_1 = None
+    # curriculum: CurriculumCfg = CurriculumCfg()
+    def __post_init__(self):
+        super().__post_init__()
+        # self.commands.base_velocity.ranges.lin_vel_x = (0.0, 1.0)
+        # self.commands.base_velocity.ranges.lin_vel_y = (0.0, 0.0)
+        # self.commands.base_velocity.ranges.ang_vel_z = (0.0, 0.0)
+        # self.rewards.track_lin_vel_xy_exp.weight = 3.0
+        # self.rewards.track_ang_vel_z_exp.weight = 3.0
+        # self.rewards.termination_penalty.weight = -1.0
+        # self.events.add_base_mass = EventTermCfg(
+        #     func=mdp.randomize_rigid_body_mass,
+        #     mode="startup",
+        #     params={
+        #         "asset_cfg": SceneEntityCfg("robot", body_names="base_link"),
+        #         "mass_distribution_params": (-2.0, 2.0),
+        #         "operation": "add",
+        #     },
+        # )
+        # self.curriculum.episode_change_1 = CurriculumTermCfg(
+        #     func=mdp.modify_env_param,
+        #     params={
+        #         "address": "cfg.episode_length_s",
+        #         "modify_fn": mdp.increase_episode_length_gradually,
+        #         "modify_params": {
+        #             "initial_length": 3.0,   # Starting episode length
+        #             "final_length": 15.0,    # Final episode length
+        #             "start_steps": 2000,    # Start increasing at step 2000
+        #             "end_steps": 32000      # Finish increasing at step 32000
+        #         }
+        #     }
+        # )
+        
 @configclass
 class NaoEnvCfg3(NaoEnvCfg):
     # @configclass
