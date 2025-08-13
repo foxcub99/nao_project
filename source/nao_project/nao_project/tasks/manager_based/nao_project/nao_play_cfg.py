@@ -21,9 +21,9 @@ class NaoEnvCfg_PLAY(NaoEnvCfg):
         self.commands.base_velocity.ranges.ang_vel_z = (-1.0, 1.0)
 
         # make a smaller scene for play
-        self.scene.num_envs = 6
+        self.scene.num_envs = 1
         self.scene.env_spacing = 2.5
-        self.episode_length_s = 40.0
+        self.episode_length_s = 10.0
 
         # disable randomization for play
         self.observations.policy.enable_corruption = False
@@ -35,7 +35,7 @@ class NaoEnvCfg_PLAY(NaoEnvCfg):
 class NaoEnvCfg_PLAYFORWARD(NaoEnvCfg_PLAY):
     def __post_init__(self):
         super().__post_init__()
-        self.commands.base_velocity.ranges.lin_vel_x = (0.3, 0.3)
+        self.commands.base_velocity.ranges.lin_vel_x = (1.0, 1.0)
         self.commands.base_velocity.ranges.lin_vel_y = (0.0, 0.0)
         self.commands.base_velocity.ranges.ang_vel_z = (0.0, 0.0)
         self.commands.base_velocity.ranges.heading = (0.0, 0.0)

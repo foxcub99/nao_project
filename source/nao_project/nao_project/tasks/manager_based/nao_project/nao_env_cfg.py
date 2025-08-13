@@ -40,6 +40,23 @@ class NaoEnvCfg(LocomotionVelocityEnvCfg):
         self.commands.base_velocity.ranges.ang_vel_z = (0.0, 0.0)
 
         # Actions
+        # self.actions.head_joint_pos.joint_names = [
+        #     "HeadYaw", "HeadPitch",
+        # ]
+        # self.actions.arms_joint_pos.joint_names = [
+        #     ".*ShoulderPitch", ".*ShoulderRoll",
+        #     ".*ElbowYaw", ".*ElbowRoll",
+        # ]
+        # self.actions.leg_joint_pos.joint_names = [
+        #     "LHipYawPitch",
+        #     ".*HipRoll", ".*HipPitch",
+        #     ".*KneePitch",
+        # ]
+        # self.actions.feet_joint_pos.joint_names = [
+        #     ".*AnklePitch", ".*AnkleRoll",
+        #     # Explicitly exclude: .*WristYaw, .*Hand, .*Finger.*, .*Thumb.*
+        # ]
+                # Actions
         self.actions.joint_pos.joint_names = [
             "HeadYaw",
             "HeadPitch",

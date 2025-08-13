@@ -95,3 +95,6 @@ class NaoEnvCfg(DirectRLEnvCfg):
 
     angular_velocity_scale: float = 0.25
     contact_force_scale: float = 0.01
+
+    lin_vel_x_goal: float = 1.0
+    lin_vel_x_tracking_weight: float = 0.5

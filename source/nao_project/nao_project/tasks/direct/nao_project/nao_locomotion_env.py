@@ -239,6 +239,9 @@ class NaoLocomotionEnv(DirectRLEnv):
             self.cfg.death_cost,
             self.cfg.alive_reward_scale,
             self.motor_effort_ratio,
+            self.vel_loc,
+            self.cfg.lin_vel_x_goal,
+            self.cfg.lin_vel_x_tracking_weight,
         )
         return total_reward
 
@@ -288,10 +291,13 @@ def compute_rewards(
     death_cost: float,
     alive_reward_scale: float,
     motor_effort_ratio: torch.Tensor,
+    vel_loc: torch.Tensor,
+    lin_vel_x_goal: float,
+    lin_vel_x_tracking_weight: float,
 ):
     heading_weight_tensor = torch.ones_like(heading_proj) * heading_weight
     heading_reward = torch.where(
-        heading_proj > 0.8, heading_weight_tensor, heading_weight * heading_proj / 0.8
+        heading_proj > 0.95, heading_weight_tensor, heading_weight * (heading_proj / 0.8) ** 2
     )
 
     # aligning up axis of robot and environment
@@ -312,11 +318,14 @@ def compute_rewards(
     alive_reward = torch.ones_like(potentials) * alive_reward_scale
     progress_reward = potentials - prev_potentials
 
+    velocity_tracking_reward = torch.clamp((vel_loc[:, 0] - lin_vel_x_goal), min=0.0) * lin_vel_x_tracking_weight
+
     total_reward = (
         progress_reward
         + alive_reward
         + up_reward
         + heading_reward
+        + velocity_tracking_reward
         - actions_cost_scale * actions_cost
         - energy_cost_scale * electricity_cost
         - dof_at_limit_cost
