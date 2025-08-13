@@ -9,7 +9,8 @@ from isaaclab.managers import CurriculumTermCfg
 
 from . import mdp
 from .velocity_env_cfg import LocomotionVelocityEnvCfg
-# from .nao_curriculum_env_cfg import NaoEnvCfg 
+
+# from .nao_curriculum_env_cfg import NaoEnvCfg
 
 ##
 # Pre-defined configs
@@ -24,38 +25,51 @@ class NaoEnvCfg(LocomotionVelocityEnvCfg):
 
         # Scene
         self.scene.robot = NAO_CFG.replace(prim_path="{ENV_REGEX_NS}/Robot")
-        self.scene.contact_forces.prim_path=f"/World/envs/env_.*/Robot/NaoH25V50/.*_ankle" # don't have to filter by ankle but efficient
-        self.scene.illegal_contact_forces.prim_path=f"/World/envs/env_.*/Robot/NaoH25V50/.*_ankle"
-        self.scene.illegal_contact_forces.filter_prim_paths_expr=[
+        self.scene.contact_forces.prim_path = f"/World/envs/env_.*/Robot/NaoH25V50/.*_ankle"  # don't have to filter by ankle but efficient
+        self.scene.illegal_contact_forces.prim_path = (
+            f"/World/envs/env_.*/Robot/NaoH25V50/.*_ankle"
+        )
+        self.scene.illegal_contact_forces.filter_prim_paths_expr = [
             "/World/envs/env_.*/Robot/NaoH25V50/l_ankle",
-            "/World/envs/env_.*/Robot/NaoH25V50/r_ankle"
+            "/World/envs/env_.*/Robot/NaoH25V50/r_ankle",
         ]
 
         # Commands
-        self.commands.base_velocity.ranges.lin_vel_x = (0.0, 0.0)
+        self.commands.base_velocity.ranges.lin_vel_x = (0.0, 1.0)
         self.commands.base_velocity.ranges.lin_vel_y = (0.0, 0.0)
         self.commands.base_velocity.ranges.ang_vel_z = (0.0, 0.0)
 
         # Actions
         self.actions.joint_pos.joint_names = [
-            "HeadYaw", "HeadPitch",
-            ".*ShoulderPitch", ".*ShoulderRoll",
-            ".*ElbowYaw", ".*ElbowRoll",
+            "HeadYaw",
+            "HeadPitch",
+            ".*ShoulderPitch",
+            ".*ShoulderRoll",
+            ".*ElbowYaw",
+            ".*ElbowRoll",
             "LHipYawPitch",
-            ".*HipRoll", ".*HipPitch",
+            ".*HipRoll",
+            ".*HipPitch",
             ".*KneePitch",
-            ".*AnklePitch", ".*AnkleRoll",
+            ".*AnklePitch",
+            ".*AnkleRoll",
             # Explicitly exclude: .*WristYaw, .*Hand, .*Finger.*, .*Thumb.*
         ]
 
         # Observations
         self.observations.policy.joint_pos.params = {
-            "asset_cfg": SceneEntityCfg("robot", joint_names=self.actions.joint_pos.joint_names)
+            "asset_cfg": SceneEntityCfg(
+                "robot", joint_names=self.actions.joint_pos.joint_names
+            )
         }
         self.observations.policy.joint_vel.params = {
-            "asset_cfg": SceneEntityCfg("robot", joint_names=self.actions.joint_pos.joint_names)
+            "asset_cfg": SceneEntityCfg(
+                "robot", joint_names=self.actions.joint_pos.joint_names
+            )
         }
-        self.observations.policy.foot_contact.params["sensor_cfg"].body_names = [".*_ankle"]
+        self.observations.policy.foot_contact.params["sensor_cfg"].body_names = [
+            ".*_ankle"
+        ]
 
         # Weights and Parameters
         # -- Rewards
@@ -72,7 +86,7 @@ class NaoEnvCfg(LocomotionVelocityEnvCfg):
         self.rewards.feet_slide.params["sensor_cfg"] = SceneEntityCfg(
             "contact_forces", body_names=[".*_ankle"]
         )
-        self.rewards.dof_torques_l2.weight = -2.0e-6 # originally -2.0e-6
+        self.rewards.dof_torques_l2.weight = -2.0e-6  # originally -2.0e-6
         self.rewards.dof_torques_l2.params["asset_cfg"] = SceneEntityCfg(
             "robot", joint_names=[".*Hip.*", ".*Knee.*"]
         )
@@ -86,21 +100,33 @@ class NaoEnvCfg(LocomotionVelocityEnvCfg):
         # -- -- Joint Limits and Deviations
         self.rewards.dof_pos_limits.weight = -1.0
         self.rewards.joint_deviation_hip_roll.weight = -0.04
-        self.rewards.joint_deviation_hip_roll.params["asset_cfg"].joint_names = [".*HipRoll"]
+        self.rewards.joint_deviation_hip_roll.params["asset_cfg"].joint_names = [
+            ".*HipRoll"
+        ]
         self.rewards.joint_deviation_arms.weight = -0.1
         self.rewards.joint_deviation_arms.params["asset_cfg"].joint_names = [
-            ".*ShoulderPitch", ".*ShoulderRoll", ".*ElbowRoll", ".*ElbowYaw"
+            ".*ShoulderPitch",
+            ".*ShoulderRoll",
+            ".*ElbowRoll",
+            ".*ElbowYaw",
         ]
-        self.rewards.joint_deviation_fingers.params["asset_cfg"].joint_names = [".*Finger.*",".*Thumb.*",]
-        self.rewards.joint_deviation_fingers = None # I took out fingers
+        self.rewards.joint_deviation_fingers.params["asset_cfg"].joint_names = [
+            ".*Finger.*",
+            ".*Thumb.*",
+        ]
+        self.rewards.joint_deviation_fingers = None  # I took out fingers
         self.rewards.joint_deviation_torso.weight = -0.04
-        self.rewards.joint_deviation_torso.params["asset_cfg"].joint_names = [".*HipYawPitch"]
+        self.rewards.joint_deviation_torso.params["asset_cfg"].joint_names = [
+            ".*HipYawPitch"
+        ]
         self.rewards.feet_self_contact.params["sensor_cfg"].body_names = [".*_ankle"]
         self.rewards.feet_self_contact.weight = -0.1
         # -- Events
-        self.events.base_external_force_torque.params["asset_cfg"].body_names = ["base_link"]
+        self.events.base_external_force_torque.params["asset_cfg"].body_names = [
+            "base_link"
+        ]
         # -- Terminations
-        self.rewards.termination_penalty.weight = -3.0
+        self.rewards.termination_penalty.weight = -1.0
         self.terminations.base_height.params["asset_cfg"].body_names = ["base_link"]
         self.terminations.base_height.params["minimum_height"] = 0.2
 
