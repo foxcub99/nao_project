@@ -18,6 +18,12 @@ from matplotlib import pyplot as plt
 
 from isaaclab.app import AppLauncher
 
+import yaml
+from copy import deepcopy
+import pickle
+
+
+
 # add argparse arguments
 parser = argparse.ArgumentParser(description="Play a checkpoint of an RL agent from skrl.")
 parser.add_argument("--video", action="store_true", default=False, help="Record videos during training.")
@@ -67,7 +73,7 @@ import gymnasium as gym
 import os
 import time
 import torch
-
+# from isaaclab.utils.dict import ConfigDict
 import skrl
 from packaging import version
 
@@ -96,48 +102,96 @@ from isaaclab_tasks.utils import get_checkpoint_path, load_cfg_from_registry, pa
 
 import nao_project.tasks  # noqa: F401
 
+from source.nao_project.nao_project.assets.nao import NAO_CFG
+
 # config shortcuts
 algorithm = args_cli.algorithm.lower()
 
 
 def main():
     """Play with skrl agent."""
-    # configure the ML framework into the global skrl variable
+    """Play with skrl agent using saved agent/env configs from a run folder."""
     if args_cli.ml_framework.startswith("jax"):
         skrl.config.jax.backend = "jax" if args_cli.ml_framework == "jax" else "numpy"
 
-    # parse configuration
-    env_cfg = parse_env_cfg(
-        args_cli.task, device=args_cli.device, num_envs=args_cli.num_envs, use_fabric=not args_cli.disable_fabric
-    )
+    if not args_cli.checkpoint:
+        raise ValueError("You must provide --checkpoint pointing to a trained model checkpoint.")
+
+    import yaml
+
+    # --------------------------------------------------
+    # Locate run directory and params dir
+    # --------------------------------------------------
+    resume_path = os.path.abspath(args_cli.checkpoint)  # e.g., ...\2025-08-07_11-21-51_ppo_torch\checkpoints\agent420.pt
+    run_dir = os.path.dirname(os.path.dirname(resume_path))  # goes up from checkpoints -> run folder
+    params_dir = os.path.join(run_dir, "params")  # run folder + "params"
+    agent_yaml_path = os.path.join(params_dir, "agent.pkl")
+    env_yaml_path = os.path.join(params_dir, "env.pkl")
+
+    print("[INFO] Check agent.yaml exists at:", agent_yaml_path)
+    print("[INFO] Check env.yaml exists at:", env_yaml_path)
+
+    if not os.path.exists(agent_yaml_path):
+        raise FileNotFoundError(f"{agent_yaml_path} does not exist.")
+    if not os.path.exists(env_yaml_path):
+        raise FileNotFoundError(f"{env_yaml_path} does not exist.")
+    log_dir = run_dir
+
+    # --------------------------------------------------
+    # Load agent.yaml (exact training config)
+    # --------------------------------------------------
+    # agent_yaml_path = os.path.join(params_dir, "agent.pkl")
+    # with open(agent_yaml_path, "rb") as f:
+        # experiment_cfg = pickle.load(f)
+    # with open(env_yaml_path, "r") as f:
+    # env_cfg = yaml.load(f, Loader=yaml.FullLoader)
     try:
         experiment_cfg = load_cfg_from_registry(args_cli.task, f"skrl_{algorithm}_cfg_entry_point")
     except ValueError:
         experiment_cfg = load_cfg_from_registry(args_cli.task, "skrl_cfg_entry_point")
 
-    # specify directory for logging experiments (load checkpoint)
-    log_root_path = os.path.join("logs", "skrl", experiment_cfg["agent"]["experiment"]["directory"])
-    log_root_path = os.path.abspath(log_root_path)
-    print(f"[INFO] Loading experiment from directory: {log_root_path}")
-    # get checkpoint path
-    if args_cli.use_pretrained_checkpoint:
-        resume_path = get_published_pretrained_checkpoint("skrl", args_cli.task)
-        if not resume_path:
-            print("[INFO] Unfortunately a pre-trained checkpoint is currently unavailable for this task.")
-            return
-    elif args_cli.checkpoint:
-        resume_path = os.path.abspath(args_cli.checkpoint)
-    else:
-        resume_path = get_checkpoint_path(
-            log_root_path, run_dir=f".*_{algorithm}_{args_cli.ml_framework}", other_dirs=["checkpoints"]
-        )
-    log_dir = os.path.dirname(os.path.dirname(resume_path))
 
-    # create isaac environment
-    env = gym.make(args_cli.task, cfg=env_cfg, render_mode="rgb_array" if args_cli.video else None)
+    # --------------------------------------------------
+    # Load env.yaml and override commands
+    # --------------------------------------------------
+    env_yaml_path = os.path.join(params_dir, "env.pkl")
+    with open(env_yaml_path, "rb") as f:
+        env_cfg = pickle.load(f)
 
-    # convert to single-agent instance if required by the RL algorithm
-    if isinstance(env.unwrapped, DirectMARLEnv) and algorithm in ["ppo"]:
+    # Override ONLY the commands section
+    env_cfg.episode_length_s = 10.0
+
+    # disable randomization for play
+    env_cfg.observations.policy.enable_corruption = False
+    # remove random pushing
+    env_cfg.events.base_external_force_torque = None
+    env_cfg.events.push_robot = None
+
+    env_cfg.commands.base_velocity.ranges.lin_vel_x = (1.0, 1.0)
+    env_cfg.commands.base_velocity.ranges.lin_vel_y = (0.0, 0.0)
+    env_cfg.commands.base_velocity.ranges.ang_vel_z = (0.0, 0.0)
+    env_cfg.commands.base_velocity.ranges.heading = (0.0, 0.0)
+
+    # Runtime overrides
+    # env_cfg["sim"]["device"] = args_cli.device
+    if args_cli.num_envs:
+        env_cfg.scene.num_envs = args_cli.num_envs
+    # env_cfg.scene.robot.prim_path = "/World/envs/env_.*/Robot"
+    env_cfg.scene.robot = NAO_CFG.replace(prim_path="/World/envs/env_.*/Robot")
+
+    # env_cfg = ConfigDict(env_cfg)
+
+    # --------------------------------------------------
+    # Create environment from saved config
+    # --------------------------------------------------
+    env = gym.make(
+        args_cli.task,
+        cfg=env_cfg,
+        render_mode="rgb_array" if args_cli.video else None
+    )
+
+    # Convert to single agent if needed
+    if isinstance(env.unwrapped, DirectMARLEnv) and args_cli.algorithm.lower() in ["ppo"]:
         env = multi_agent_to_single_agent(env)
 
     # get environment (step) dt for real-time evaluation
@@ -161,15 +215,35 @@ def main():
     # wrap around environment for skrl
     env = SkrlVecEnvWrapper(env, ml_framework=args_cli.ml_framework)  # same as: `wrap_env(env, wrapper="auto")`
 
-    # configure and instantiate the skrl runner
-    # https://skrl.readthedocs.io/en/latest/api/utils/runner.html
+    if args_cli.ml_framework.startswith("torch"):
+        from skrl.utils.runner.torch import Runner
+    elif args_cli.ml_framework.startswith("jax"):
+        from skrl.utils.runner.jax import Runner
+
+    # Instantiate agent from config
+    # agent_class = getattr(skrl.agents.torch, args_cli.algorithm.upper())
+    # agent = agent_class(
+    #     models=None,  # built automatically
+    #     memory=None,
+    #     cfg=experiment_cfg["agent"]["config"],
+    #     observation_space=env.observation_space,
+    #     action_space=env.action_space,
+    #     device=args_cli.device
+    #     )
+
+
+    # Load checkpoint
+    # agent.load(resume_path)
     experiment_cfg["trainer"]["close_environment_at_exit"] = False
     experiment_cfg["agent"]["experiment"]["write_interval"] = 0  # don't log to TensorBoard
     experiment_cfg["agent"]["experiment"]["checkpoint_interval"] = 0  # don't generate checkpoints
     runner = Runner(env, experiment_cfg)
 
-    print(f"[INFO] Loading model checkpoint from: {resume_path}")
-    runner.agent.load(resume_path)
+
+    # --------------------------------------------------
+    # Run evaluation
+    # --------------------------------------------------
+    # runner = Runner(env=env, agents=agent)
     # set agent to evaluation mode
     runner.agent.set_running_mode("eval")
 
@@ -244,12 +318,12 @@ def main():
         plt.tight_layout()
         plt.tight_layout(rect=[0, 0.02, 1, 0.97])  # leave bottom 5% for footnote
         plt.figtext(0.5, 0.01, f"Top Speed: {top_speed:.2f}m/s", ha='center')
-        plt.suptitle(f"Nao Manager v7.1", y=0.98, fontsize=16)
+        plt.suptitle(f"Nao Manager v3.{args_cli.iteration-1}", y=0.98, fontsize=16)
         if args_cli.checkpoint:
             date_dir = os.path.dirname(os.path.dirname(args_cli.checkpoint))
         else:
-            date_dir = "plots/"
-        plt.savefig(f"{date_dir}/plot7.png")
+            date_dir = "plots/mismatched/"
+        plt.savefig(f"{date_dir}/plot3.png")
         # plt.savefig(f"plots/mgr-bi2/v5-{args_cli.iteration-1}.png")
         plt.close()
         print("[INFO] Saved speed plots to speed_plots.png")
@@ -277,7 +351,7 @@ def main():
             else:
                 actions = outputs[-1].get("mean_actions", outputs[0])
             # env stepping
-            obs, _, done, _, _ = env.step(actions)
+            obs, _, _, _, _ = env.step(actions)
 
             # base_lin_vel = env.unwrapped.vel_loc[0]
             active_terms = env.unwrapped.observation_manager.get_active_iterable_terms(0)
@@ -288,7 +362,7 @@ def main():
             base_lin_vel = obs_dict["policy-base_lin_vel"]
             
             # Detect environment reset when speed goes to 0 (ignore first time)
-            if done:  # near zero
+            if abs(base_lin_vel[0]) < 1e-3:  # near zero
                 save_plots(speed, planar_speed, total_ep_speed, top_speed)
                 env.close()
                 print("[INFO] Environment closed after second reset.")

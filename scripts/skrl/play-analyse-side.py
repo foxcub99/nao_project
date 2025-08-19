@@ -200,15 +200,15 @@ def main():
         plt.figure(figsize=(12, 8))
 
         plt.subplot(3, 2, 1)
-        plt.plot(speed_list, label='X Speed')
-        plt.title('X Speed')
+        plt.plot(speed_list, label='Y Speed')
+        plt.title('Y Speed')
         plt.xlabel('Timestep')
         plt.ylabel('Speed (m/s)')
         plt.legend()
 
         plt.subplot(3, 2, 2)
-        plt.plot(average_speed, label='Average X Speed', color='orange')
-        plt.title('Average X Speed')
+        plt.plot(average_speed, label='Average Y Speed', color='orange')
+        plt.title('Average Y Speed')
         plt.xlabel('Timestep')
         plt.ylabel('Speed (m/s)')
         plt.legend()
@@ -229,14 +229,14 @@ def main():
 
         plt.subplot(3, 2, 5)
         plt.plot(total_speed_list, label='Total Speed', color='blue')
-        plt.title('Total X Speed')
+        plt.title('Total Y Speed')
         plt.xlabel('Timestep')
         plt.ylabel('Speed (m/s)')
         plt.legend()
 
         plt.subplot(3, 2, 6)
         plt.plot(average_total_speed, label='Average Total Speed', color='purple')
-        plt.title('Average Total X Speed')
+        plt.title('Average Total Y Speed')
         plt.xlabel('Timestep')
         plt.ylabel('Speed (m/s)')
         plt.legend()
@@ -244,12 +244,12 @@ def main():
         plt.tight_layout()
         plt.tight_layout(rect=[0, 0.02, 1, 0.97])  # leave bottom 5% for footnote
         plt.figtext(0.5, 0.01, f"Top Speed: {top_speed:.2f}m/s", ha='center')
-        plt.suptitle(f"Nao Manager v7.1", y=0.98, fontsize=16)
+        plt.suptitle(f"Nao Manager Sideways v3.{args_cli.iteration-1}", y=0.98, fontsize=16)
         if args_cli.checkpoint:
             date_dir = os.path.dirname(os.path.dirname(args_cli.checkpoint))
         else:
             date_dir = "plots/"
-        plt.savefig(f"{date_dir}/plot7.png")
+        plt.savefig(f"{date_dir}/plot-sideways3.png")
         # plt.savefig(f"plots/mgr-bi2/v5-{args_cli.iteration-1}.png")
         plt.close()
         print("[INFO] Saved speed plots to speed_plots.png")
@@ -277,7 +277,7 @@ def main():
             else:
                 actions = outputs[-1].get("mean_actions", outputs[0])
             # env stepping
-            obs, _, done, _, _ = env.step(actions)
+            obs, _, _, _, _ = env.step(actions)
 
             # base_lin_vel = env.unwrapped.vel_loc[0]
             active_terms = env.unwrapped.observation_manager.get_active_iterable_terms(0)
@@ -288,19 +288,19 @@ def main():
             base_lin_vel = obs_dict["policy-base_lin_vel"]
             
             # Detect environment reset when speed goes to 0 (ignore first time)
-            if done:  # near zero
+            if abs(base_lin_vel[1]) < 1e-3:  # near zero
                 save_plots(speed, planar_speed, total_ep_speed, top_speed)
                 env.close()
                 print("[INFO] Environment closed after second reset.")
                 break
 
             # If mgr
-            speed.append(base_lin_vel[0])
-            total_ep_speed.append(base_lin_vel[0])
+            speed.append(base_lin_vel[1])
+            total_ep_speed.append(base_lin_vel[1])
             planar_speed.append((base_lin_vel[0]**2 + base_lin_vel[1]**2)**0.5)
             average_speed = sum(speed) / len(speed) if speed else 0.0
-            if base_lin_vel[0] > top_speed:
-                top_speed = base_lin_vel[0]
+            if base_lin_vel[1] > top_speed:
+                top_speed = base_lin_vel[1]
 
             # If dir
             # if base_lin_vel[0] > top_speed:

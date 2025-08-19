@@ -90,8 +90,8 @@ class NaoEnvCfg(LocomotionVelocityEnvCfg):
 
         # Weights and Parameters
         # -- Rewards
-        self.rewards.track_lin_vel_xy_exp.weight = 1.0
-        self.rewards.track_ang_vel_z_exp.weight = 1.0
+        self.rewards.track_lin_vel_xy_exp.weight = 3.0
+        self.rewards.track_ang_vel_z_exp.weight = 3.0
         self.rewards.feet_air_time_height.weight = 0.0
         self.rewards.feet_air_time_height.params["threshold"] = 0.35
         self.rewards.feet_air_time_height.params["max_threshold"] = 0.7

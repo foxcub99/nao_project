@@ -3,7 +3,7 @@ from pathlib import Path
 import sys
 
 # Root path to the parent folder
-base_dir = Path(r"C:\Users\reill\lab\nao_project\logs-robotics-dev\skrl\nao_flat")
+base_dir = Path(r"C:\Users\reill\lab\nao_project\logs\skrl\nao_flat")
 
 # Get subfolders sorted alphabetically (oldest first)
 subfolders = sorted([f for f in base_dir.iterdir() if f.is_dir()])
@@ -25,8 +25,8 @@ for i, folder in enumerate(subfolders, start=1):
     # Run the Isaac Lab command
     cmd = [
         r"..\..\Isaaclab\isaaclab.bat",
-        "-p", "scripts\\skrl\\play-analyse.py",
-        "--task", "Nao-Mgr-Play-Forward",
+        "-p", "scripts\\skrl\\play-analyse-side.py",
+        "--task", "Nao-Mgr-Play-Sideways",
         "--num_envs", "1",
         "--headless",
         "--checkpoint", str(checkpoint),
