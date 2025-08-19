@@ -30,10 +30,35 @@ gym.register(
         "env_cfg_entry_point": f"{__name__}.nao_env_cfg:NaoEnvCfg",
         "rsl_rl_cfg_entry_point": f"{agents.__name__}.rsl_rl_ppo_cfg:NaoFlatPPORunnerCfg",
         "skrl_cfg_entry_point": f"{agents.__name__}:skrl_flat_ppo_cfg.yaml",
+        # "skrl_cfg_entry_point": f"{agents.__name__}:skrl_humanoid_ppo_cfg.yaml",
+    },
+)
+gym.register(
+    id="Nao-Mgr-Humanoid",
+    entry_point="isaaclab.envs:ManagerBasedRLEnv",
+    disable_env_checker=True,
+    kwargs={
+        "env_cfg_entry_point": f"{__name__}.nao_env_cfg:NaoEnvCfg",
+        "rsl_rl_cfg_entry_point": f"{agents.__name__}.rsl_rl_ppo_cfg:NaoFlatPPORunnerCfg",
+        # "skrl_cfg_entry_point": f"{agents.__name__}:skrl_flat_ppo_cfg.yaml",
+        "skrl_cfg_entry_point": f"{agents.__name__}:skrl_humanoid_ppo_cfg.yaml",
     },
 )
 
 
+
+
+gym.register(
+    id="Nao-Mgr-Play-Humanoid",
+    entry_point="isaaclab.envs:ManagerBasedRLEnv",
+    disable_env_checker=True,
+    kwargs={
+        "env_cfg_entry_point": f"{__name__}.nao_play_cfg:NaoEnvCfg_PLAY",
+        "rsl_rl_cfg_entry_point": f"{agents.__name__}.rsl_rl_ppo_cfg:NaoFlatPPORunnerCfg",
+        # "skrl_cfg_entry_point": f"{agents.__name__}:skrl_flat_ppo_cfg.yaml",
+        "skrl_cfg_entry_point": f"{agents.__name__}:skrl_humanoid_ppo_cfg.yaml",
+    },
+)
 gym.register(
     id="Nao-Mgr-Play",
     entry_point="isaaclab.envs:ManagerBasedRLEnv",
@@ -93,7 +118,7 @@ gym.register(
     entry_point="isaaclab.envs:ManagerBasedRLEnv",
     disable_env_checker=True,
     kwargs={
-        "env_cfg_entry_point": f"{__name__}.training_tests_cfg:NaoEnvCfg2",
+        "env_cfg_entry_point": f"{__name__}.training_tests_cfg:NaoEnvCfg1",
         "rsl_rl_cfg_entry_point": f"{agents.__name__}.rsl_rl_ppo_cfg:NaoFlatPPORunnerCfg",
         "skrl_cfg_entry_point": f"{agents.__name__}:skrl_direct_ppo_cfg.yaml",
     },
@@ -103,7 +128,7 @@ gym.register(
     entry_point="isaaclab.envs:ManagerBasedRLEnv",
     disable_env_checker=True,
     kwargs={
-        "env_cfg_entry_point": f"{__name__}.training_tests_cfg:NaoEnvCfg3",
+        "env_cfg_entry_point": f"{__name__}.training_tests_cfg:NaoEnvCfg1",
         "rsl_rl_cfg_entry_point": f"{agents.__name__}.rsl_rl_ppo_cfg:NaoFlatPPORunnerCfg",
         "skrl_cfg_entry_point": f"{agents.__name__}:skrl_humanoid_ppo_cfg.yaml",
     },
@@ -113,7 +138,7 @@ gym.register(
     entry_point="isaaclab.envs:ManagerBasedRLEnv",
     disable_env_checker=True,
     kwargs={
-        "env_cfg_entry_point": f"{__name__}.training_tests_cfg:NaoEnvCfg4",
+        "env_cfg_entry_point": f"{__name__}.nao_env_cfg:NaoEnvCfg",
         "rsl_rl_cfg_entry_point": f"{agents.__name__}.rsl_rl_ppo_cfg:NaoFlatPPORunnerCfg",
         "skrl_cfg_entry_point": f"{agents.__name__}:skrl_g1_ppo_cfg.yaml",
     },

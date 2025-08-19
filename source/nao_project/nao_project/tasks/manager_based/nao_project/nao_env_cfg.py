@@ -40,6 +40,23 @@ class NaoEnvCfg(LocomotionVelocityEnvCfg):
         self.commands.base_velocity.ranges.ang_vel_z = (0.0, 0.0)
 
         # Actions
+        # self.actions.head_joint_pos.joint_names = [
+        #     "HeadYaw", "HeadPitch",
+        # ]
+        # self.actions.arms_joint_pos.joint_names = [
+        #     ".*ShoulderPitch", ".*ShoulderRoll",
+        #     ".*ElbowYaw", ".*ElbowRoll",
+        # ]
+        # self.actions.leg_joint_pos.joint_names = [
+        #     "LHipYawPitch",
+        #     ".*HipRoll", ".*HipPitch",
+        #     ".*KneePitch",
+        # ]
+        # self.actions.feet_joint_pos.joint_names = [
+        #     ".*AnklePitch", ".*AnkleRoll",
+        #     # Explicitly exclude: .*WristYaw, .*Hand, .*Finger.*, .*Thumb.*
+        # ]
+                # Actions
         self.actions.joint_pos.joint_names = [
             "HeadYaw",
             "HeadPitch",
@@ -73,8 +90,8 @@ class NaoEnvCfg(LocomotionVelocityEnvCfg):
 
         # Weights and Parameters
         # -- Rewards
-        self.rewards.track_lin_vel_xy_exp.weight = 1.0
-        self.rewards.track_ang_vel_z_exp.weight = 1.0
+        self.rewards.track_lin_vel_xy_exp.weight = 3.0
+        self.rewards.track_ang_vel_z_exp.weight = 3.0
         self.rewards.feet_air_time_height.weight = 0.0
         self.rewards.feet_air_time_height.params["threshold"] = 0.35
         self.rewards.feet_air_time_height.params["max_threshold"] = 0.7

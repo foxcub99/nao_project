@@ -103,9 +103,35 @@ class CommandsCfg:
 class ActionsCfg:
     """Action specifications for the MDP."""
 
-    joint_pos = mdp.JointPositionActionCfg(
-        asset_name="robot", joint_names=[".*"], scale=0.5, use_default_offset=True
-    )
+    # leg_joint_pos = mdp.JointPositionActionCfg(
+    #     asset_name="robot", 
+    #     # joint_names=[".*"], 
+    #     joint_names=MISSING, 
+    #     scale=5.0, 
+    #     use_default_offset=True
+    # )
+    # head_joint_pos = mdp.JointPositionActionCfg(
+    #     asset_name="robot", 
+    #     # joint_names=[".*"], 
+    #     joint_names=MISSING, 
+    #     scale=0.5, 
+    #     use_default_offset=True
+    # )
+    # arms_joint_pos = mdp.JointPositionActionCfg(
+    #     asset_name="robot", 
+    #     # joint_names=[".*"], 
+    #     joint_names=MISSING, 
+    #     scale=0.3, 
+    #     use_default_offset=True
+    # )
+    # feet_joint_pos = mdp.JointPositionActionCfg(
+    #     asset_name="robot", 
+    #     # joint_names=[".*"], 
+    #     joint_names=MISSING, 
+    #     scale=5.0, 
+    #     use_default_offset=True
+    # )
+    joint_pos = mdp.JointPositionActionCfg(asset_name="robot", joint_names=[".*"], scale=0.5, use_default_offset=True)
 
 
 @configclass
